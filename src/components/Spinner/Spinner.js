@@ -8,7 +8,6 @@ class Spinner extends React.Component {
         <div className='bounce2' />
         <div className='bounce3' />
       </div>
-
     )
   }
 }

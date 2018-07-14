@@ -68,34 +68,38 @@ class App extends React.Component {
   }
 
   render () {
-    console.log(this.props)
+    console.log('__props__', this.props)
     return (
       <div>
         <Header />
-        <div className='wrapper'>
-          <div className='flex-row hero'>
-            <h1 className='valueprop'>
-              Find the perfect exact match domain name
-            </h1>
+          <div className={'hero-wrapper'}>
+            <div className={'hero-column'}>
+              <div className='flex-row hero'>
+                <h1 className='valueprop'>
+                  Find the perfect exact match domain name
+                </h1>
+              </div>
+              <div className='flex-row hero'>
+                <SearchInput {...this.props} />
+              </div>
+              <SelectSearchType
+                {...this.props}
+              />
+              <SelectTld
+                {...this.props}
+              />
+              <SelectSynonym
+                {...this.props}
+              />
+            </div>
           </div>
-          <div className='flex-row hero'>
-            <SearchInput {...this.props} />
-          </div>
-          <SelectSearchType
-            {...this.props}
-          />
-          <SelectTld
-            {...this.props}
-          />
-          <SelectSynonym
-            {...this.props}
-          />
+          <div className='wrapper'>
           {
             this.props.domains.map((domain, key) => (
               <Card {...this.props} domain={domain} key={key} />
             ))
           }
-        </div>
+          </div>
       </div>
     )
   }

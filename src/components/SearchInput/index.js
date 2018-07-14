@@ -24,7 +24,7 @@ class SearchInput extends React.Component {
     }
     const { options } = this.state
     return (
-      <div className='section' style={styles}>
+      <div className={'search-input'}>
         <Select.Creatable
           style={styles}
           options={options}

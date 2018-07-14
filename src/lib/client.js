@@ -33,7 +33,7 @@ const generateDataset = (label, data) => ({
   data: data
 })
 
-const toDomain = (value, { tld }) => `${value.replace(/\s/g, '')}${tld}`
+// const toDomain = (value, { tld }) => `${value.replace(/\s/g, '')}${tld}`
 
 const format = ({ set }, options) => {
   return set

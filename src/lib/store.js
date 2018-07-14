@@ -52,7 +52,7 @@ export const setSearchMode = payload => ({
 export const initialState = {
   seed: '',
   keywords: [],
-  tld: '.com',
+  tld: 'com',
   domains: [],
   synonyms: [],
   reset: false,
@@ -76,6 +76,7 @@ export const reducer = (state, action) => {
     case SET_TLD:
       return {
         ...state,
+        seed: '',
         domains: [],
         tld: action.payload
       }
@@ -89,7 +90,6 @@ export const reducer = (state, action) => {
       return {
         ...state,
         domains: [],
-        tld: action.payload,
         mode: action.payload
       }
     case SET_DOMAINS:

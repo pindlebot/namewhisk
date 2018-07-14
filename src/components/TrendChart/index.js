@@ -2,6 +2,7 @@ import React from 'react'
 import { Line } from 'react-chartjs-2'
 import moment from 'moment'
 import Client from '../../lib/client'
+import Spinner from '../Spinner'
 
 const OPTIONS = {
   maintainAspectRatio: false,
@@ -23,25 +24,18 @@ const OPTIONS = {
 }
 
 class TrendChart extends React.Component {
-  state = {
-    data: {},
-    loading: true
-  }
-
-  async componentDidMount () {
-    let client = new Client(this.props)
-    let data = await client.fetchTrends(this.props.domain.keyword)
-    this.setState({ data, loading: false })
+  componentDidMount () {
+    this.props.fetchChartData()
   }
 
   render () {
-    if (this.state.loading) {
-      return false
+    if (!this.props.data) {
+      return <Spinner />
     }
     return (
       <div className='trends'>
         <Line
-          data={this.state.data}
+          data={this.props.data}
           options={OPTIONS}
           height={120}
         />

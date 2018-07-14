@@ -3,22 +3,44 @@ import TrendChart from '../TrendChart'
 import Client from '../../lib/client'
 
 class Content extends React.Component {
-  async componentDidMount () {
-    let client = new Client(this.props)
-    let result = await client.fetchDomain(this.props.domain.domain)
-    console.log({ result })
+  state = {
+    open: false
   }
-
   render () {
-    const { domain, stats } = this.props
+    const {
+      domain,
+      stats,
+      handleClick,
+      expanded,
+      fetchChartData,
+      loading
+    } = this.props
 
     return (
       <div className='card-content'>
-        <div className='info'>
+        <div className={'card-row'}>
           <span className='keyword'>Keyword: {domain.keyword}</span>
           <span className='ams'>Monthly volume: {stats && stats.ams}</span>
         </div>
-        <TrendChart {...this.props} domain={domain} />
+       
+        <div className={'card-details'}>
+          {expanded && <TrendChart
+            {...this.props}
+            domain={domain}
+            fetchChartData={fetchChartData}
+          />
+          }
+        </div>
+        <div>
+          <button className={'expand'} onClick={handleClick}>
+            {loading
+              ? '' 
+              : expanded
+                ? <i className='fa fa-chevron-up' />
+                : <i className='fa fa-chevron-down' />
+            }
+          </button>
+        </div>
       </div>
     )
   }

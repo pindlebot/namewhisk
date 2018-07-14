@@ -4,6 +4,7 @@ const googleTrends = require('google-trends-api')
 const db = require('dynamodb-tools')
   .db({ region: 'us-east-1' })
   .table('npm-available-dev-names')
+const domainAvailability = require('./domain-availability')
 
 const {
   WEBKNOX_API_KEY,
@@ -47,29 +48,8 @@ const handler = {
     keyword = keyword.replace('+', ' ')
     return googleTrends.interestOverTime({ keyword: keyword })
   },
-  domains: ({ name, tld }) => {
-    console.log({ name, tld })
-    return db.get({ id: name })
-      .catch(async err => {
-        if (err) console.log(err)
-        // let route53 = new AWS.Route53Domains({ region: 'us-east-1' })
-        // let data = await route53
-        //  .checkDomainAvailability({ DomainName: `${name}.${tld}` })
-        //  .promise()
-        let { data } = await fetch(`${DNS_SIMPLE_ENDPOINT}/${name}.${tld}/check`, {
-          headers: {
-            'Authorization': `Bearer ${DNS_SIMPLE_TOKEN}`
-          }
-        }).then(resp => resp.json())
-        let params = {
-          id: name,
-          [tld]: data.available,
-          npm: null
-        }
-        console.log({ params })
-        await db.set(params)
-        return params
-      })
+  domains: async ({ name, tld }) => {
+    return domainAvailability({ name, tld })
   },
   synonyms: ({ word }) => {
     const url = `https://wordsapiv1.p.mashape.com/words/${word}/synonyms`
