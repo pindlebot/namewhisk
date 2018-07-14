@@ -1,4 +1,5 @@
 const fetch = require('node-fetch')
+const AWS = require('aws-sdk')
 const db = require('dynamodb-tools')({ region: 'us-east-1' })
   .table('npm-available-dev-names')
 
@@ -12,14 +13,38 @@ const getDomain = async ({ name }) => {
     .then(result => result.Item)
 }
 
-const checkAvailable = ({ name, tld }) => {
-  return fetch(`${DNS_SIMPLE_ENDPOINT}/${name}.${tld}/check`, {
+const Domains = new AWS.Route53Domains({ region: 'us-east-1' })
+
+const awsCheckDomainAvailability = (name) => Domains.checkDomainAvailability({
+  DomainName: name
+}).promise()
+  .then(({ Availability }) => {
+    switch (Availability) {
+      case 'AVAILABLE':
+        return { available: true }
+      default:
+        return { available: false }
+    }
+  })
+
+const dnsSimpleCheckDomainAvailability = ({ name, tld }) => {
+  let domain = `${name}.${tld}`
+  return fetch(`${DNS_SIMPLE_ENDPOINT}/${domain}/check`, {
     headers: {
       'Authorization': `Bearer ${DNS_SIMPLE_TOKEN}`
     }
   }).then(resp => resp.json())
-    .then(({ data }) => data)
-}
+    .then(data => {
+      if (data.message) {
+        return awsCheckDomainAvailability(domain)
+      }
+      return data.data
+    })
+    .catch(err => {
+      console.log(err)
+      return {}
+    })
+}   
 
 const updateDomain = ({ name, tld, available }) => {
   let params = {
@@ -32,10 +57,11 @@ const updateDomain = ({ name, tld, available }) => {
 }
 
 const fallback = ({ name, tld }) => {
-  return checkAvailable({ name, tld })
-    .then(({ available }) =>
-      updateDomain({ name, tld, available })
-    )
+  return dnsSimpleCheckDomainAvailability({ name, tld })
+    .then((data) => {
+      console.log({ data })
+      return updateDomain({ name, tld, available: data.available })
+    })
 }
 
 module.exports = async ({ name, tld }) => {

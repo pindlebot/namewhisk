@@ -8,6 +8,12 @@ const SET_SYNONYMS = 'SET_SYONYMS'
 const SET_LOADING = 'SET_LOADING'
 const SET_SEARCH_MODE = 'SET_SEARCH_MODE'
 const SET_STATS = 'SET_STATS'
+const SET_OFFSET = 'SET_OFFSET'
+
+export const setOffset = offset => ({
+  payload: offset,
+  type: SET_OFFSET
+})
 
 export const setSeed = (seed) => ({
   payload: seed,
@@ -51,14 +57,13 @@ export const setSearchMode = payload => ({
 
 export const initialState = {
   seed: '',
-  keywords: [],
   tld: 'com',
   domains: [],
   synonyms: [],
-  reset: false,
   stats: [],
-  loading: false,
-  mode: 'whimsical'
+  mode: 'whimsical',
+  offset: 3,
+  scrollTop: 0
 }
 
 export const reducer = (state, action) => {
@@ -66,9 +71,8 @@ export const reducer = (state, action) => {
     case SET_SEED:
       return {
         ...state,
+        offset: 3,
         domains: [],
-        keywords: [],
-        loading: true,
         seed: action.payload
       }
     case SET_KEYWORDS:
@@ -76,8 +80,9 @@ export const reducer = (state, action) => {
     case SET_TLD:
       return {
         ...state,
-        seed: '',
-        domains: [],
+        offset: 3,
+        domains: [{ placeholder: true }, { placeholder: true }, { placeholder: true }],
+        scrollTop: document.documentElement.scrollTop,
         tld: action.payload
       }
     case SET_SYNONYMS:
@@ -89,11 +94,18 @@ export const reducer = (state, action) => {
     case SET_SEARCH_MODE:
       return {
         ...state,
-        domains: [],
+        offset: 3,
+        domains: [{ placeholder: true }, { placeholder: true }, { placeholder: true }],
+        scrollTop: document.documentElement.scrollTop,
         mode: action.payload
       }
     case SET_DOMAINS:
       return { ...state, domains: action.payload }
+    case SET_OFFSET:
+      return {
+        ...state,
+        offset: action.payload
+      }
     default:
       return state
   }

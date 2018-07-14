@@ -13,4 +13,12 @@ const CardHeader = props => (
   </div>
 )
 
+CardHeader.defaultProps = {
+  domain: {
+    domain: ''
+  },
+  tld: '',
+  available: undefined
+}
+
 export default CardHeader

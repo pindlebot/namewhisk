@@ -1,0 +1,9 @@
+{
+  "name": "domaincaviar-app",
+  "type": "static",
+  "regions": ["us-east-1"],
+  "static": {
+    "dir": "dist"
+  },
+  "profile": "default"
+}

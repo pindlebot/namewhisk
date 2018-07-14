@@ -1,6 +1,5 @@
 import React from 'react'
 import { Line } from 'react-chartjs-2'
-import moment from 'moment'
 import Client from '../../lib/client'
 import Spinner from '../Spinner'
 
@@ -37,7 +36,8 @@ class TrendChart extends React.Component {
         <Line
           data={this.props.data}
           options={OPTIONS}
-          height={120}
+          width={160}
+          height={100}
         />
         <span>Google trends - last 12 months</span>
       </div>

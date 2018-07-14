@@ -15,7 +15,6 @@ class Content extends React.Component {
       fetchChartData,
       loading
     } = this.props
-
     return (
       <div className='card-content'>
         <div className={'card-row'}>

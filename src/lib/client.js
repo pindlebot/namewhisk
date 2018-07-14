@@ -1,5 +1,4 @@
 import 'isomorphic-fetch'
-import moment from 'moment'
 
 const BASE_URI = 'https://1oqkke2wfd.execute-api.us-east-1.amazonaws.com/dev'
 
@@ -38,7 +37,6 @@ const generateDataset = (label, data) => ({
 const format = ({ set }, options) => {
   return set
     .filter(({ value }) => /^[\w\s]+$/.test(value))
-    .slice(0, 3)
     .map(({ value }) => ({
       domain: value.replace(/[-\s]+/g, ''),
       keyword: value

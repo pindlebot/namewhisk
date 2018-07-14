@@ -1,0 +1,11 @@
+node_modules
+.cache
+.vscode
+serverless
+src
+.babelrc
+.env
+.gitignore
+package.json
+Procfile
+.upignore

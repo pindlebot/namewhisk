@@ -30,12 +30,14 @@ const handler = {
   lookup: ({ keyword }) => {
     const key = GREPWORDS_API_KEY
     const url = `http://api.grepwords.com/lookup?apikey=${key}&q=${keyword}`
+    console.log({ url, key })
     return fetch(url, {
       method: 'get'
     }).then(resp => resp.json())
   },
   stats: ({ keyword }) => {
     const url = `https://webknox-keywords.p.mashape.com/keywords/${keyword}`
+    console.log(url)
     return fetch(url, {
       method: 'get',
       headers: {
@@ -43,6 +45,10 @@ const handler = {
         'Accept': 'application/json'
       }
     }).then(resp => resp.json())
+      .then(resp => {
+        console.log(resp)
+        return resp
+      })
   },
   trends: ({ keyword }) => {
     keyword = keyword.replace('+', ' ')
@@ -66,7 +72,9 @@ const handler = {
 function endpoint (name, shouldCache = true) {
   return async function (evt, ctx, cb) {
     let { queryStringParameters } = evt
-    console.log({ queryStringParameters })
+    if (!Object.keys(queryStringParameters || {}).length) {
+      return cb(null, createResponse({ error: 'missing parameters' }))
+    }
     let data = {}
     try {
       data = await handler[name](queryStringParameters)
@@ -75,11 +83,7 @@ function endpoint (name, shouldCache = true) {
       console.error(error)
       data = { error }
     }
-    cb(null,
-      createResponse(
-        data
-      )
-    )
+    cb(null, createResponse(data))
   }
 }
 
