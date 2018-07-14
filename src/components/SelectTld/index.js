@@ -5,6 +5,7 @@ export default class SelectTld extends React.Component {
     const { tld, selectTld } = this.props
     return (
       <div className='flex-row tab'>
+        <div className='option-title'>tld</div>
         <span
           className={tld === 'com' ? 'selected' : ''}
           onClick={evt => selectTld('com')}>

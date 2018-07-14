@@ -2,6 +2,7 @@ import React from 'react'
 import { Line } from 'react-chartjs-2'
 import Client from '../../lib/client'
 import Spinner from '../Spinner'
+import Chart from 'chart.js'
 
 const OPTIONS = {
   maintainAspectRatio: false,
@@ -14,10 +15,16 @@ const OPTIONS = {
   },
   scales: {
     xAxes: [{
-      display: true
+      display: true,
+      gridLines: {
+        display: false
+      }
     }],
     yAxes: [{
-      display: false
+      display: false,
+      gridLines: {
+        display: false
+      }
     }]
   }
 }
@@ -25,6 +32,26 @@ const OPTIONS = {
 class TrendChart extends React.Component {
   componentDidMount () {
     this.props.fetchChartData()
+      .then(() => {
+        this.renderChart()
+      })
+  }
+  
+  ref = element => {
+    this.element = element
+  }
+
+  renderChart() {
+    const {options, legend, type, redraw, plugins} = this.props;
+    const node = this.element;
+    const data = this.props.data
+
+    this.chartInstance = new Chart(node, {
+      type: 'line',
+      data: data,
+      options: OPTIONS,
+      plugins: []
+    });
   }
 
   render () {
@@ -33,13 +60,18 @@ class TrendChart extends React.Component {
     }
     return (
       <div className='trends'>
-        <Line
+        {/*<Line
           data={this.props.data}
           options={OPTIONS}
           width={160}
           height={100}
+        />*/}
+        <canvas
+          ref={this.ref}
+          height={100}
+          width={160}
+          onClick={this.handleOnClick}
         />
-        <span>Google trends - last 12 months</span>
       </div>
     )
   }

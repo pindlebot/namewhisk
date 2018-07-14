@@ -36,6 +36,7 @@ const dnsSimpleCheckDomainAvailability = ({ name, tld }) => {
   }).then(resp => resp.json())
     .then(data => {
       if (data.message) {
+        console.log(data.message)
         return awsCheckDomainAvailability(domain)
       }
       return data.data

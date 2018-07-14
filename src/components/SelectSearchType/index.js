@@ -6,6 +6,7 @@ class SelectSearchType extends React.Component {
     const isWhimsical = mode === 'whimsical'
     return (
       <div className='flex-row tab'>
+        <div className='option-title'>Mode</div>
         <span
           className={!isWhimsical ? 'selected' : ''}
           onClick={evt => setSearchMode('exact')}>

@@ -6,6 +6,42 @@ const db = require('dynamodb-tools')
   .table('npm-available-dev-names')
 const domainAvailability = require('./domain-availability')
 
+const formatLookup = (resp) => {
+  if (!resp.length) {
+    return {}
+  }
+  resp = resp[0]
+  let {
+    ams,
+    cmp,
+    cpc,
+    gms,
+    lms,
+    keyword,
+    competition
+  } = resp
+  let i = 1
+  let data = []
+  while (i <= 12) {
+    if (resp[`m${i}`]) {
+      let volume = resp[`m${i}`]
+      let month = resp[`m${i}_month`]
+      data.push({ volume, month })
+      i++
+    }
+  }
+  return {
+    ams,
+    cmp,
+    cpc,
+    lms,
+    gms,
+    keyword,
+    competition,
+    data
+  }
+}
+
 const {
   WEBKNOX_API_KEY,
   DNS_SIMPLE_ENDPOINT,
@@ -28,12 +64,11 @@ const handler = {
     return require('google-autosuggest')(keyword)
   },
   lookup: ({ keyword }) => {
-    const key = GREPWORDS_API_KEY
-    const url = `http://api.grepwords.com/lookup?apikey=${key}&q=${keyword}`
-    console.log({ url, key })
+    const url = `http://api.grepwords.com/lookup?apikey=${GREPWORDS_API_KEY}&q=${keyword}`
     return fetch(url, {
       method: 'get'
     }).then(resp => resp.json())
+      .then(resp => formatLookup(resp))
   },
   stats: ({ keyword }) => {
     const url = `https://webknox-keywords.p.mashape.com/keywords/${keyword}`

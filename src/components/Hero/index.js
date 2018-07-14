@@ -10,8 +10,8 @@ class Hero extends React.Component {
       <div className={'hero-wrapper'}>
         <div className={'hero-column'}>
           <div className='flex-row hero'>
-            <h1 className='valueprop'>
-              Find the perfect exact match domain name
+            <h1 className='value-prop'>
+            Find the Perfect Domain Name
             </h1>
           </div>
           <div className='flex-row hero'>

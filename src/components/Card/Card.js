@@ -2,6 +2,7 @@ import React from 'react'
 import CardContent from '../CardContent'
 import CardHeader from '../CardHeader'
 import Client from '../../lib/client'
+import { resolve } from 'path';
 
 class Card extends React.Component {
   state = {
@@ -19,10 +20,12 @@ class Card extends React.Component {
   }
 
   fetchChartData = () => {
-    this.setState({ loading: true }, async () => {
-      let client = new Client(this.props)
-      let data = await client.fetchTrends(this.props.domain.keyword)
-      this.setState({ data, loading: false })
+    return new Promise((resolve, reject) => {
+      this.setState({ loading: true }, async () => {
+        let client = new Client(this.props)
+        let data = await client.fetchTrends(this.props.domain.keyword)
+        this.setState({ data, loading: false }, resolve)
+      })
     })
   }
 
@@ -36,26 +39,25 @@ class Card extends React.Component {
       return <div className='card-wrapper placeholder' />
     }
     return (
-      <a href={'/#'}
-        target='_blank'
-        className={this.props.loading ? 'fadeOut animated' : 'fadeIn animated'}
+      <div
+        className='card-wrapper'
+        onClick={this.handleClick}
       >
-        <div className='card-wrapper'>
-          <CardHeader
-           {...this.props}
-           available={this.state.available}
-          />
-          <CardContent
-            {...this.props}
-            stats={{}}
-            expanded={this.state.expanded}
-            handleClick={this.handleClick}
-            data={this.state.data}
-            loading={this.state.loading}
-            fetchChartData={this.fetchChartData}
-          />
+        <CardHeader
+          {...this.props}
+          available={this.state.available}
+          expanded={this.state.expanded}
+          loading={this.state.loading}
+        />
+        <CardContent
+          {...this.props}
+          stats={{}}
+          expanded={this.state.expanded}
+          data={this.state.data}
+          loading={this.state.loading}
+          fetchChartData={this.fetchChartData}
+        />
         </div>
-      </a>
     )
   }
 }

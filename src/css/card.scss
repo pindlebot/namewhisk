@@ -1,0 +1,102 @@
+.card-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  width: 100%;
+  border-radius: 4px;
+  background-color: #fff;
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,.04);
+  margin-bottom: 24px;
+}
+
+.card-header {
+  box-sizing: border-box;
+  padding: 0 1em;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  width: 100%;
+  height: 3em;
+  background-color: #2C3E50;
+  background-color: #ECF0F1;
+}
+
+.card-header div {
+  color: #2C3E50;
+  flex-basis: 33%;
+  text-align: center;
+}
+
+.card-header .card-header-left{
+  flex-basis: 30%;
+  display: inline-flex;
+  justify-content: flex-start;
+}
+
+.card-header .card-header-right {
+  flex-basis: 30%;
+  display: inline-flex;
+  justify-content: flex-end;
+}
+
+.card-header .card-header-center {
+  flex-basis: 40%;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.card-content {
+  width: 100%;
+  color: #2C3E50; 
+  padding: 1em;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.card-footer {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  background-color: #BDC3C7;
+}
+
+.card-content .trends {
+  flex-basis: 50%;
+  margin-top: 1em;
+}
+
+.card-content .trends span {
+  font-size: 12px;
+}
+
+.card-details {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.card-row {
+  padding: 1em;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.placeholder {
+  min-height: 180px;
+  background-color:#ECF0F1;
+}

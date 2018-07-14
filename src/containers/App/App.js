@@ -5,6 +5,7 @@ import Spinner from '../../components/Spinner'
 import SelectSearchType from '../../components/SelectSearchType'
 import { connect } from 'react-redux'
 import '../../css/main.scss'
+import 'react-select/dist/react-select.css'
 import {
   setSeed,
   setTld,
@@ -88,7 +89,9 @@ class App extends React.Component {
     }))
     let domains = this.props.domains.filter(d => !d.placeholder).concat(suggestions)
     this.props.setDomains(domains)
-    this.setState({ loading: false })
+    setTimeout(() => {
+      this.setState({ loading: false })
+    }, 2000)
   }
 
   exactFetch = async () => {
@@ -113,6 +116,7 @@ class App extends React.Component {
   }
 
   render () {
+    console.log(this.state)
     return (
       <div>
         <Header />

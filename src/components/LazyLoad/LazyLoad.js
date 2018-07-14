@@ -81,13 +81,13 @@ class LazyLoad extends React.Component {
     if (bottom && !this.props.loading) {
       this.props.setOffset(this.props.offset + 3)
     }
-  }, 200)
+  }, 1000)
 
   render () {
     return (
-      <div id='lazy-load'>
+      <div className='lazy-load'>
         {this.props.render(this.state)}
-        {this.props.loading && <Spinner />}
+        {this.props.loading ? <Spinner /> : <div className='spacer' />}
       </div>
     )
   }

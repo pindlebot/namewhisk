@@ -66,6 +66,8 @@ export const initialState = {
   scrollTop: 0
 }
 
+const _domains = [{ placeholder: true }, { placeholder: true }, { placeholder: true }]
+
 export const reducer = (state, action) => {
   switch (action.type) {
     case SET_SEED:
@@ -81,8 +83,7 @@ export const reducer = (state, action) => {
       return {
         ...state,
         offset: 3,
-        domains: [{ placeholder: true }, { placeholder: true }, { placeholder: true }],
-        scrollTop: document.documentElement.scrollTop,
+        domains: state.domains.length ? _domains : [],
         tld: action.payload
       }
     case SET_SYNONYMS:
@@ -95,8 +96,7 @@ export const reducer = (state, action) => {
       return {
         ...state,
         offset: 3,
-        domains: [{ placeholder: true }, { placeholder: true }, { placeholder: true }],
-        scrollTop: document.documentElement.scrollTop,
+        domains: state.domains.length ? _domains : [],
         mode: action.payload
       }
     case SET_DOMAINS:

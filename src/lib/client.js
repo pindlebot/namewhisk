@@ -14,14 +14,14 @@ const params = {
 const generateDataset = (label, data) => ({
   label: label || '',
   fill: false,
-  lineTension: 0.1,
+  lineTension: 0.2,
   backgroundColor: 'rgba(75,192,192,0.4)',
-  borderColor: 'rgb(0,0,0)',
+  borderColor: '#52616F',
   borderCapStyle: 'butt',
   borderDashOffset: 0.0,
   borderJoinStyle: 'miter',
-  pointBorderColor: 'rgb(0,0,0)',
-  pointBackgroundColor: 'rgb(0,0,0)',
+  pointBorderColor: '#2C3E50',
+  pointBackgroundColor: '#3F4F5F',
   pointBorderWidth: 1,
   pointHoverRadius: 5,
   pointHoverBackgroundColor: 'rgba(75,192,192,1)',
@@ -68,14 +68,6 @@ class Client {
     let suggestions = await fetch(url)
       .then(resp => resp.json())
       .then(data => format(data, this.options))
-    // let query = suggestions.map(({ domain }) => domain).join('+')
-    // let domains = await this.fetch(query, { endpoint: 'domains' })
-    // domains = domains
-    //  .filter(result => result.availability === 'AVAILABLE')
-    //  .map(({ domain }) => domain)
-
-    // suggestions = suggestions
-    //  .filter(suggestion => domains.includes(suggestion.domain))
     return suggestions
   }
 
