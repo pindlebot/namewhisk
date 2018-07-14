@@ -1,23 +1,12 @@
 {
-  "name": "react-sample-project",
-  "version": "1.0.0",
-  "description": "ReactJS sample project",
+  "name": "domaincaviar",
+  "version": "0.0.1",
   "main": "index.js",
   "scripts": {
     "lint": "standard \"src/**/*.js\" --fix --parser babel-eslint | snazzy",
     "dev": "parcel src/index.html",
     "clean": "rimraf dist && rimraf .cache"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/focuswish/react-firebase-boilerplate.git"
-  },
-  "author": "Ben Gardner",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/focuswish/react-firebase-boilerplate/issues"
-  },
-  "homepage": "https://github.com/focuswish/react-firebase-boilerplate#readme",
   "dependencies": {
     "body-parser": "^1.18.3",
     "chart.js": "^2.7.2",
