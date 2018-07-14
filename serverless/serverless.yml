@@ -1,0 +1,69 @@
+service: domain-caviar
+plugins:
+  - serverless-dotenv-plugin
+custom:
+  dotenv:
+    path: ./.env
+    include:
+      - WEBKNOX_API_KEY
+      - GREPWORDS_API_KEY
+      - DNS_SIMPLE_ENDPOINT
+      - DNS_SIMPLE_TOKEN
+provider:
+  name: aws
+  runtime: nodejs8.10
+  region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - route53domains:*
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: "*"
+
+functions:
+  suggest:
+    handler: handler.suggest
+    events:
+      - http:
+          path: suggest
+          method: get
+          cors: true
+  trends:
+    handler: handler.trends
+    events:
+      - http:
+          path: trends
+          method: get
+          cors: true
+  lookup:
+    handler: handler.lookup
+    events:
+      - http:
+          path: lookup
+          method: get
+          cors: true
+  domains:
+    handler: handler.domains
+    events:
+      - http:
+          path: domains
+          method: get
+          cors: true
+  stats:
+    handler: handler.stats
+    events:
+      - http:
+          path: stats
+          method: get
+          cors: true
+  synonyms:
+    handler: handler.synonyms
+    events:
+      - http:
+          path: synonyms
+          method: get
+          cors: true
+   

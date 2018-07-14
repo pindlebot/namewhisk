@@ -1,0 +1,15 @@
+{
+  "name": "domain-caviar-serverless",
+  "version": "0.0.1",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "dynamodb-tools": "^0.0.55",
+    "google-autosuggest": "^0.0.12",
+    "google-trends-api": "^4.6.2",
+    "node-fetch": "^2.1.2"
+  },
+  "devDependencies": {
+    "serverless-dotenv-plugin": "^1.1.3"
+  }
+}
