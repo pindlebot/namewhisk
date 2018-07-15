@@ -71,9 +71,12 @@ class Client {
     return suggestions
   }
 
-  fetchDomain (keyword) {
+  fetchDomain (keyword, validate = false) {
     let tld = this.options.tld.replace(/\./, '')
     let url = `${BASE_URI}/domains?tld=${tld}&name=${keyword}`
+    if (validate) {
+      url += '&validate=true'
+    }
     return fetch(url)
       .then(resp => resp.json())
   }

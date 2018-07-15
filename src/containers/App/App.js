@@ -116,17 +116,18 @@ class App extends React.Component {
   }
 
   render () {
-    console.log(this.state)
     return (
-      <div>
+      <React.Fragment>
         <Header />
+        <main>
           <Hero  {...this.props} />
           <Results
             {...this.props}
             fetchMore={this.fetchMore}
             loading={this.state.loading}
           />
-      </div>
+        </main>
+      </React.Fragment>
     )
   }
 }

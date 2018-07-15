@@ -30,20 +30,20 @@
   text-align: center;
 }
 
-.card-header .card-header-left{
-  flex-basis: 30%;
+.card-header .card-header-left {
+  flex-basis: 45%;
   display: inline-flex;
   justify-content: flex-start;
 }
 
 .card-header .card-header-right {
-  flex-basis: 30%;
+  flex-basis: 45%;
   display: inline-flex;
   justify-content: flex-end;
 }
 
 .card-header .card-header-center {
-  flex-basis: 40%;
+  flex-basis: 10%;
   display: inline-flex;
   justify-content: center;
 }

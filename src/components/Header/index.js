@@ -4,7 +4,7 @@ class Header extends React.Component {
   render () {
     return (
       <div className='header'>
-        <span className='brand'>Domain Cavier</span>
+        <span className='brand'>namewhisk</span>
       </div>)
   }
 }

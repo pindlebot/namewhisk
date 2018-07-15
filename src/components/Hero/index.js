@@ -10,9 +10,7 @@ class Hero extends React.Component {
       <div className={'hero-wrapper'}>
         <div className={'hero-column'}>
           <div className='flex-row hero'>
-            <h1 className='value-prop'>
-            Find the Perfect Domain Name
-            </h1>
+            <h1 className='value-prop'>Let's Name Your Silly Startup</h1>
           </div>
           <div className='flex-row hero'>
             <SearchInput {...this.props} />

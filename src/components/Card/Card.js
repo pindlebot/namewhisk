@@ -12,9 +12,16 @@ class Card extends React.Component {
     loading: false
   }
   async componentDidMount () {
+    this.checkAvailability()
+  }
+
+  checkAvailability = async (validate = false) => {
     if (this.props.domain.placeholder) return
     let client = new Client(this.props)
-    let result = await client.fetchDomain(this.props.domain.domain)
+    let result = await client.fetchDomain(
+      this.props.domain.domain,
+      validate
+    )
     let available = Boolean(result[this.props.tld])
     this.setState({ available })
   }
@@ -31,10 +38,17 @@ class Card extends React.Component {
 
   handleClick = evt => {
     evt.preventDefault()
-    this.setState(prevState => ({ expanded: !prevState.expanded }))
+    this.setState(prevState => ({
+      expanded: !prevState.expanded
+    }), () => {
+      this.checkAvailability(true)
+    })
   }
 
   render () {
+    if (this.state.available !== true) {
+      return false
+    }
     if (this.props.domain.placeholder) {
       return <div className='card-wrapper placeholder' />
     }
@@ -42,6 +56,9 @@ class Card extends React.Component {
       <div
         className='card-wrapper'
         onClick={this.handleClick}
+        style={{
+          opacity: this.state.available ? 1 : 0.5
+        }}
       >
         <CardHeader
           {...this.props}

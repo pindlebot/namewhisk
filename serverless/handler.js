@@ -89,8 +89,8 @@ const handler = {
     keyword = keyword.replace('+', ' ')
     return googleTrends.interestOverTime({ keyword: keyword })
   },
-  domains: async ({ name, tld }) => {
-    return domainAvailability({ name, tld })
+  domains: async ({ name, tld, validate }) => {
+    return domainAvailability({ name, tld, validate })
   },
   synonyms: ({ word }) => {
     const url = `https://wordsapiv1.p.mashape.com/words/${word}/synonyms`

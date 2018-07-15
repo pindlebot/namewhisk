@@ -45,10 +45,14 @@ const dnsSimpleCheckDomainAvailability = ({ name, tld }) => {
       console.log(err)
       return {}
     })
-}   
+}
 
-const updateDomain = ({ name, tld, available }) => {
+const updateDomain = ({ name, tld, available }, data = {}) => {
+  if (typeof available !== 'boolean') {
+    return {}
+  }
   let params = {
+    ...data,
     id: name,
     [tld]: available,
     npm: null,
@@ -57,30 +61,59 @@ const updateDomain = ({ name, tld, available }) => {
   return db.set(params).then(() => params)
 }
 
-const fallback = ({ name, tld }) => {
+const validateDomainStatus = ({ name, tld }, data = {}) => {
   return dnsSimpleCheckDomainAvailability({ name, tld })
     .then((data) => {
-      console.log({ data })
-      return updateDomain({ name, tld, available: data.available })
+      if (data.error || data.message) {
+        return {}
+      }
+      return updateDomain({
+        name,
+        tld,
+        available: data.available
+      }, data)
     })
 }
 
-module.exports = async ({ name, tld }) => {
+const checkDomain = ({ name, tld }) => {
+  return new Promise((resolve, reject) => {
+    require('dns').resolve(`${name}.${tld}`, (err, data) => {
+      if (err) resolve({ available: true })
+      resolve({ available: false })
+    })
+  })
+}
+
+const fallback = ({ name, tld }, data = {}) => {
+  return checkDomain({ name, tld })
+    .then(({ available }) =>
+      updateDomain({ name, tld, available }, data)
+    )
+}
+
+module.exports = async ({ name, tld, validate }) => {
   if (tld.startsWith('.')) {
     tld = tld.slice(1, tld.length)
   }
+
   if (/\./.test(name)) {
     name = name.replace(/^([^.]+)(?=\.)/, '')
   }
+
+  if (validate) {
+    return validateDomainStatus({ name, tld })
+  }
+
   let data = {}
+
   try {
     data = await getDomain({ name })
     let expiry = Math.floor(Date.now() / 1000) - 24 * 60 * 60
     if (!data.date || data.date < expiry || !data[tld]) {
-      data = await fallback({ name, tld })
+      data = await fallback({ name, tld, validate }, data)
     }
   } catch (err) {
-    data = await fallback({ name, tld })
+    data = await fallback({ name, tld, validate })
   }
   console.log(data)
   return data
