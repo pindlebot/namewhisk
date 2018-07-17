@@ -21,101 +21,75 @@ import Client from '../../lib/client'
 import Card from '../../components/Card'
 import Results from '../../components/Results'
 import Hero from '../../components/Hero'
+import Remote from '../../lib/remote'
+
+const ENDPOINT_URL = 'https://pr4yxzklrj.execute-api.us-east-1.amazonaws.com/dev/'
 
 class App extends React.Component {
   state = {
-    loading: false,
-    cacheKey: ''
+    loading: false
   }
 
   _isInFlight = false
 
-  static getDerivedStateFromProps (nextProps, nextState) {
-    const { tld, seed, mode, offset } = nextProps
-    const { loading } = nextState
-    let cacheKey = `${seed}-${tld}-${mode}-${offset}-${loading}`
-    if (cacheKey !== nextState.cacheKey) {
-      return { 
-        cacheKey
-      }
-    }
-    return null
-  }
-
   shouldComponentUpdate(nextProps, nextState) {
-    let shouldUpdate = nextState.cacheKey !== this.state.cacheKey ||
-      this.props.domains.length !== nextProps.domains.length
-    return shouldUpdate
+    return nextProps.seed !== this.props.seed ||
+      nextProps.mode !== this.props.mode ||
+      nextProps.loading !== this.props.loading ||
+      nextProps.offset !== this.props.offset
+      nextProps.domains.length !== this.props.domains.length
   }
 
-  componentDidUpdate (prevProps, prevState) {
-    let shouldFetchMore = !this.state.loading &&
-      !this._isInFlight &&
-      this.props.seed
-   
-    if (
-      !this.state.loading &&
-      this.props.seed
-    ) {
-      this.fetchMore()
+  createConnection = () => {
+    if (this.remote && this.remote.connected) {
+      return
     }
-  }
-
-  fetchMore = () => {
-    let { mode, offset, domains } = this.props
-    let _domains = domains.filter(d => !d.placeholder)
-  
-    if (_domains.length < offset) {
-      this[mode + 'Fetch']()
-    }
-  }
-
-  async whimsicalFetch () {
-    if (this.props.seed === '') return
-    await new Promise((resolve, reject) =>
-      this.setState(prevState => {
-        if (prevState.loading) return null
-        return { loading: true }
-      }, resolve)
-    )
-    const NAMIST_ENDPOINT = 'https://5d9t3ix770.execute-api.us-east-1.amazonaws.com/dev/namist'
-    let url = `${NAMIST_ENDPOINT}?name=${this.props.seed}&offset=${this.props.offset}`
-    
-    let data = await fetch(url)
-      .then(resp => resp.json())
-    let suggestions = data.map(str => ({
-      domain: str.toLowerCase(),
-      keyword: str.toLowerCase().replace(this.props.seed, ' $& ').trim()
-    }))
-    let domains = this.props.domains.filter(d => !d.placeholder).concat(suggestions)
-    this.props.setDomains(domains)
-    setTimeout(() => {
-      this.setState({ loading: false })
-    }, 2000)
-  }
-
-  exactFetch = async () => {
-    if (this.props.seed === '') return
-    await new Promise((resolve, reject) =>
-      this.setState(prevState => {
-        if (prevState.loading) return null
-        return { loading: true }
-      }, resolve)
-    )
-
-    const { tld, seed } = this.props
-    const client = new Client({ tld })
-    await client.fetchSuggestions(seed)
-      .then(suggestions => {
-        let domains = this.props.domains.filter(d => !d.placeholder).concat(suggestions)
-        return this.props.setDomains(domains)
-      })
-    this.setState({
-      loading: false
+    console.warn('creating new connection!')
+    this.remote = new Remote({
+      remote: {
+        endpointUrl: ENDPOINT_URL
+      },
+      debug: true
     })
   }
 
+  componentDidMount () {
+    this.createConnection()
+  }
+
+  async componentDidUpdate (prevProps, prevState) {
+    if (
+      !this.props.loading &&
+      this.props.seed &&
+      !this._isInFlight
+    ) {
+      this._isInFlight = true
+      this.props.setLoading(true)
+      if (
+        this.remote.channel &&
+        this.remote.channel.disconnecting
+      ) {
+        this.createConnection()
+      }
+      const params = {
+        name: this.props.seed,
+        tld: this.props.tld,
+        offset: this.props.offset,
+        limit: 10,
+        mode: this.props.mode
+      }
+      let domains = await this.remote.process(params)
+      this.props.setDomains(domains)
+      this._isInFlight = false
+    }
+  }
+
+  async componentWillUnmount () {
+    await this.remote.end()
+  }
+
   render () {
+    console.log(this.props)
     return (
       <React.Fragment>
         <Header />
@@ -123,8 +97,6 @@ class App extends React.Component {
           <Hero  {...this.props} />
           <Results
             {...this.props}
-            fetchMore={this.fetchMore}
-            loading={this.state.loading}
           />
         </main>
       </React.Fragment>

@@ -5,5 +5,13 @@
   "static": {
     "dir": "dist"
   },
-  "profile": "default"
+  "profile": "default",
+  "stages": {
+    "production": {
+      "domain": "namewhisk.com"
+    },
+    "staging": {
+      "domain": "dev.namewhisk.com"
+    }
+  }
 }

@@ -9,10 +9,12 @@ custom:
       - GREPWORDS_API_KEY
       - DNS_SIMPLE_ENDPOINT
       - DNS_SIMPLE_TOKEN
+      - AWS_IOT_HOST
 provider:
   name: aws
   runtime: nodejs8.10
   region: us-east-1
+  timeout: 15
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -22,45 +24,46 @@ provider:
       Action:
         - dynamodb:*
       Resource: "*"
+    - Effect: Allow
+      Action:
+        - sqs:*
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - sns:*
+      Resource: "*"
 
 functions:
   suggest:
-    handler: handler.suggest
+    handler: src/handler.suggest
     events:
       - http:
           path: suggest
           method: get
           cors: true
   trends:
-    handler: handler.trends
+    handler: src/handler.trends
     events:
       - http:
           path: trends
           method: get
           cors: true
   lookup:
-    handler: handler.lookup
+    handler: src/handler.lookup
     events:
       - http:
           path: lookup
           method: get
           cors: true
-  domains:
-    handler: handler.domains
-    events:
-      - http:
-          path: domains
-          method: get
-          cors: true
   stats:
-    handler: handler.stats
+    handler: src/handler.stats
     events:
       - http:
           path: stats
           method: get
           cors: true
   synonyms:
-    handler: handler.synonyms
+    handler: src/handler.synonyms
     events:
       - http:
           path: synonyms

@@ -62,25 +62,6 @@ class Client {
       .then(resp => resp.json())
   }
 
-  async fetchSuggestions (value) {
-    let url = `${BASE_URI}/suggest`
-    url += `?keyword=${value}`
-    let suggestions = await fetch(url)
-      .then(resp => resp.json())
-      .then(data => format(data, this.options))
-    return suggestions
-  }
-
-  fetchDomain (keyword, validate = false) {
-    let tld = this.options.tld.replace(/\./, '')
-    let url = `${BASE_URI}/domains?tld=${tld}&name=${keyword}`
-    if (validate) {
-      url += '&validate=true'
-    }
-    return fetch(url)
-      .then(resp => resp.json())
-  }
-
   async fetchTrends (value) {
     let { default: { timelineData: data } } = await this.fetch(value, { endpoint: 'trends' })
     let values = data.map((data) => data.value[0])

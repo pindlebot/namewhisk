@@ -5,7 +5,7 @@ import Spinner from '../Spinner'
 
 class Results extends React.Component {
   render () {
-    const domains = this.props.domains.slice(0, this.props.offset)
+    const domains = this.props.domains
     if (!domains.length) return false
     return (
       <LazyLoad {...this.props} render={({ loading }) => {
@@ -16,6 +16,7 @@ class Results extends React.Component {
                 <Card {...this.props} domain={domain} key={key} />
               ))
             }
+            {this.props.loading && <Spinner />}
           </div>
         )
       }} />

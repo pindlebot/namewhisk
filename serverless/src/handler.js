@@ -1,10 +1,5 @@
 const fetch = require('node-fetch')
-const AWS = require('aws-sdk')
 const googleTrends = require('google-trends-api')
-const db = require('dynamodb-tools')
-  .db({ region: 'us-east-1' })
-  .table('npm-available-dev-names')
-const domainAvailability = require('./domain-availability')
 
 const formatLookup = (resp) => {
   if (!resp.length) {
@@ -44,8 +39,6 @@ const formatLookup = (resp) => {
 
 const {
   WEBKNOX_API_KEY,
-  DNS_SIMPLE_ENDPOINT,
-  DNS_SIMPLE_TOKEN,
   GREPWORDS_API_KEY
 } = process.env
 
@@ -88,9 +81,6 @@ const handler = {
   trends: ({ keyword }) => {
     keyword = keyword.replace('+', ' ')
     return googleTrends.interestOverTime({ keyword: keyword })
-  },
-  domains: async ({ name, tld, validate }) => {
-    return domainAvailability({ name, tld, validate })
   },
   synonyms: ({ word }) => {
     const url = `https://wordsapiv1.p.mashape.com/words/${word}/synonyms`

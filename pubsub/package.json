@@ -1,0 +1,27 @@
+{
+  "name": "namewhisk-pubsub",
+  "version": "0.0.1",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 6.10.0"
+  },
+  "scripts": {
+    "deploy": "serverless deploy",
+    "lint": "standard \"src/*.js\" --fix"
+  },
+  "dependencies": {
+    "aws4": "^1.6.0",
+    "cuid": "^1.3.8",
+    "google-autosuggest": "^0.0.12",
+    "mqtt": "^2.11.0",
+    "namist": "^0.0.8",
+    "node-fetch": "^2.1.2",
+    "prefix-suffix": "^0.0.1"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.275.1",
+    "dotenv": "^6.0.0",
+    "serverless-dotenv-plugin": "^1.1.3",
+    "standard": "^11.0.1"
+  }
+}

@@ -3,7 +3,7 @@ import CardSpinner from '../Spinner'
 // <i className='fa fa-check available' />
 const CardTitle = props => (
   <div className='card-header-left' dangerouslySetInnerHTML={{
-    __html: `${props.domain.domain.replace(props.seed, '<span class="seed">$&</span>').trim()}.${props.tld}`
+    __html: `${props.domain.name.replace(props.seed, '<span class="seed">$&</span>').trim()}.${props.tld}`
   }} />
 )
 

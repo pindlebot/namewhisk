@@ -62,8 +62,8 @@ export const initialState = {
   synonyms: [],
   stats: [],
   mode: 'whimsical',
-  offset: 3,
-  scrollTop: 0
+  offset: 0,
+  loading: false
 }
 
 const _domains = [{ placeholder: true }, { placeholder: true }, { placeholder: true }]
@@ -73,7 +73,7 @@ export const reducer = (state, action) => {
     case SET_SEED:
       return {
         ...state,
-        offset: 3,
+        offset: 0,
         domains: [],
         seed: action.payload
       }
@@ -82,7 +82,7 @@ export const reducer = (state, action) => {
     case SET_TLD:
       return {
         ...state,
-        offset: 3,
+        offset: 0,
         domains: state.domains.length ? _domains : [],
         tld: action.payload
       }
@@ -95,12 +95,16 @@ export const reducer = (state, action) => {
     case SET_SEARCH_MODE:
       return {
         ...state,
-        offset: 3,
+        offset: 0,
         domains: state.domains.length ? _domains : [],
         mode: action.payload
       }
     case SET_DOMAINS:
-      return { ...state, domains: action.payload }
+      let names = state.domains.map(domain => domain.name)
+      let domains = state.domains.concat(action.payload.filter(domain => {
+        return !names.includes(domain.name)
+      }))
+      return { ...state, domains: domains, loading: false }
     case SET_OFFSET:
       return {
         ...state,
