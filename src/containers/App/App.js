@@ -42,37 +42,28 @@ class App extends React.Component {
   }
 
   createConnection = async () => {
-    if (this.remote) {
-      if (this.remote.connected) {
-        return
-      }
-      if (
-        this.remote.channel &&
-        this.remote.channel.disconnecting
-      ) {
-        console.warn('disconnected')
-      }
+    const params = {
+      endpointUrl: ENDPOINT_URL,
+      debug: true
     }
-    if (this.subscription) {
+
+    if (
+      this.subscription
+    ) {
       return this.subscription
     }
-    console.warn('creating new connection!')
-    this.remote = new Remote({
-      remote: {
-        endpointUrl: ENDPOINT_URL
-      },
-      debug: true
-    })
-    this.subscription = await this.remote.start()
+
+    this.remote = new Remote(params)
+    this.subscription = await this.remote.connect()
     this.subscription.subscribe(this.update.bind(this))
   }
 
-  async componentDidMount () {
+  componentDidMount () {
     this.createConnection()
   }
 
   async componentDidUpdate (prevProps, prevState) {
-    console.log('componentDidUpdate',this.props)
+    console.log('componentDidUpdate',this)
     if (
       this.props.seed &&
       !this._isInFlight
@@ -87,7 +78,7 @@ class App extends React.Component {
         limit: 10,
         mode: this.props.mode
       }
-      this.subscription.publish(params)
+      await this.subscription.publish(params)
     }
   }
 

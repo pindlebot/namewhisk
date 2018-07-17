@@ -7,7 +7,7 @@ const {
 } = require('./utils')
 const domainAvailability = require('./domain-availability')
 
-const handleRequest = ({ channel, topics }) => async ({ topic, buffer }) => {
+const createHandler = ({ channel, topics }) => async ({ topic, buffer }) => {
   const message = buffer.toString()
   console.log(`Message from ${topics.REQUEST}`, message)
   const {
@@ -25,7 +25,7 @@ const handleRequest = ({ channel, topics }) => async ({ topic, buffer }) => {
   } else {
     names = await require('google-autosuggest')(name)
       .then(data => data.set.map(({ value }) => value.replace(/\s/g, '')))
-      .filter(w => /^[A-Za-z0-8-]+$/.test(w))
+    names = names.filter(w => /^[A-Za-z0-8-]+$/.test(w))
   }
 
   let promises = names.map(name => domainAvailability({ name, tld }))
@@ -75,7 +75,7 @@ module.exports.handler = async (
   const channel = mqtt.connect(createPresignedURL())
   channel.on('error', error => console.log('WebSocket error', error))
   channel.on('offline', () => console.log('WebSocket offline'))
-
+  const handleMessage = createHandler({ channel, topics })
   const end = (topicEndData = {}) => {
     if (!endingInvocation) {
       endingInvocation = true
@@ -128,28 +128,29 @@ module.exports.handler = async (
 
   const queue = []
   let listener
+  timeout = newTimeout()
 
   const waitForMessages = () => new Promise(async (resolve, reject) => {
     if (!listener) {
       listener = channel.on('message', async (topic, buffer) => {
         if (topics.REQUEST === topic && !endingInvocation) {
-          let promise = handleRequest({ channel, topics })({ topic, buffer })
+          let promise = handleMessage({ topic, buffer })
           queue.push(promise)
         }
       })
     }
 
     if (queue.length) {
+      clearTimeout(timeout)
       await queue.shift()
-      resolve()
+      timeout = newTimeout()
+      return resolve()
     }
     resolve(
-      Promise.resolve(
-        new Promise((resolve, reject) =>
-          setTimeout(() => {
-            resolve()
-          }, 100)
-        )
+      new Promise((resolve, reject) =>
+        setTimeout(() => {
+          resolve()
+        }, 0)
       )
     )
   })
@@ -171,11 +172,9 @@ module.exports.handler = async (
   })
 
   while (true) {
-    timeout = newTimeout()
     if (endingInvocation) {
       return
     }
     await waitForMessages()
-    clearTimeout(timeout)
   }
 }
