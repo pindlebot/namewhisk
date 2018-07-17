@@ -36,13 +36,25 @@ class App extends React.Component {
     return nextProps.seed !== this.props.seed ||
       nextProps.mode !== this.props.mode ||
       nextProps.loading !== this.props.loading ||
-      nextProps.offset !== this.props.offset
-      nextProps.domains.length !== this.props.domains.length
+      nextProps.offset !== this.props.offset ||
+      nextProps.domains.length !== this.props.domains.length ||
+      nextProps.tld !== this.props.tld
   }
 
-  createConnection = () => {
-    if (this.remote && this.remote.connected) {
-      return
+  createConnection = async () => {
+    if (this.remote) {
+      if (this.remote.connected) {
+        return
+      }
+      if (
+        this.remote.channel &&
+        this.remote.channel.disconnecting
+      ) {
+        console.warn('disconnected')
+      }
+    }
+    if (this.subscription) {
+      return this.subscription
     }
     console.warn('creating new connection!')
     this.remote = new Remote({
@@ -51,26 +63,23 @@ class App extends React.Component {
       },
       debug: true
     })
+    this.subscription = await this.remote.start()
+    this.subscription.subscribe(this.update.bind(this))
   }
 
-  componentDidMount () {
+  async componentDidMount () {
     this.createConnection()
   }
 
   async componentDidUpdate (prevProps, prevState) {
+    console.log('componentDidUpdate',this.props)
     if (
-      !this.props.loading &&
       this.props.seed &&
       !this._isInFlight
     ) {
       this._isInFlight = true
       this.props.setLoading(true)
-      if (
-        this.remote.channel &&
-        this.remote.channel.disconnecting
-      ) {
-        this.createConnection()
-      }
+      await this.createConnection()
       const params = {
         name: this.props.seed,
         tld: this.props.tld,
@@ -78,10 +87,20 @@ class App extends React.Component {
         limit: 10,
         mode: this.props.mode
       }
-      let domains = await this.remote.process(params)
-      this.props.setDomains(domains)
-      this._isInFlight = false
+      this.subscription.publish(params)
     }
+  }
+
+  update = (domains) => {
+    if (domains.length) {
+      let p = this.props.setDomains(domains)
+      console.log({ p })
+    } else {
+      this.props.setOffset(this.props.offset + 10)
+    }
+    setTimeout(() => {
+      this._isInFlight = false
+    }, 0)
   }
 
   async componentWillUnmount () {

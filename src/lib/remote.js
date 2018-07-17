@@ -6,6 +6,7 @@ class Remote {
   constructor (options) {
     this.options = options
     this.connection = this.initConnection()
+    this.subscription = undefined
   }
 
   async initConnection () {
@@ -102,15 +103,21 @@ class Remote {
     })
   }
 
-  async process (command) {
+  async start () {
     await this.connection
 
-    if (this.options.debug) {
-      console.log(`Running remotely: ${JSON.stringify(command)}`)
+    if (!this.subscription) {
+      this.subscription = await new Promise((resolve, reject) =>
+        this.channel.subscribe(this.TOPIC_RESPONSE, resolve))
     }
 
-    const promise = new Promise((resolve, reject) => {
-      this.channel.subscribe(this.TOPIC_RESPONSE, () => {
+    return {
+      publish: (data) => {
+        console.log('publish', data)
+        this.channel.publish(this.TOPIC_REQUEST, JSON.stringify(data))
+      },
+      subscribe: (update) => {
+        console.log('subscribe', update)
         this.channel.on('message', (topic, buffer) => {
           console.log(buffer.toString())
           if (this.TOPIC_RESPONSE === topic) {
@@ -118,19 +125,16 @@ class Remote {
             const result = JSON.parse(message)
 
             if (result.error) {
-              reject(result.error)
+              update(result.error)
             } else if (result.value) {
-              resolve(result.value)
+              update(result.value)
             } else {
-              resolve()
+              update()
             }
           }
         })
-        this.channel.publish(this.TOPIC_REQUEST, JSON.stringify(command))
-      })
-    })
-
-    return promise
+      }
+    }
   }
 
   async close () {

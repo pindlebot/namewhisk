@@ -1,5 +1,6 @@
 const fetch = require('node-fetch')
 const AWS = require('aws-sdk')
+const avail = require('domain-avail')
 
 const {
   DNS_SIMPLE_ENDPOINT,
@@ -116,8 +117,10 @@ const nativeDnsResolve = ({ name, tld }) => {
 const fallback = async ({ name, tld }) => {
   let available
   try {
-    available = await nativeDnsResolve({ name, tld })
+    available = await avail(`${name}.${tld}`)
+      .then(data => data.available)
   } catch (err) {
+    console.log(err)
     available = await dnsSimple({ name, tld })
   }
   available = typeof available === 'boolean'
@@ -133,8 +136,13 @@ async function checkDomainAvailability ({ name, tld }) {
   let domain = `${name}.${tld}`
   let data = await getDomain({ name })
   let expiry = Math.floor(Date.now() / 1000) - 24 * 60 * 60
-  if ((data.date || 0) < expiry) {
-    console.log('updating because data.date < expiry', { date: (data.date || 0), expiry })
+  if (
+    !(
+      data &&
+      typeof data[tld] !== 'undefined' &&
+      (data.date || 0) > expiry
+    )
+  ) {
     data = await fallback({ name, tld })
   }
 

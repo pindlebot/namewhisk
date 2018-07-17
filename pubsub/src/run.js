@@ -126,14 +126,33 @@ module.exports.handler = async (
   await subscribe({ channel, topic: topics.REQUEST })
   await subscribe({ channel, topic: topics.END })
 
-  const waitForMessages = () => new Promise((resolve, reject) =>
-    channel.on('message', async (topic, buffer) => {
-      if (topics.REQUEST === topic && !endingInvocation) {
-        await handleRequest({ channel, topics })({ topic, buffer })
-        resolve()
-      }
-    })
-  )
+  const queue = []
+  let listener
+
+  const waitForMessages = () => new Promise(async (resolve, reject) => {
+    if (!listener) {
+      listener = channel.on('message', async (topic, buffer) => {
+        if (topics.REQUEST === topic && !endingInvocation) {
+          let promise = handleRequest({ channel, topics })({ topic, buffer })
+          queue.push(promise)
+        }
+      })
+    }
+
+    if (queue.length) {
+      await queue.shift()
+      resolve()
+    }
+    resolve(
+      Promise.resolve(
+        new Promise((resolve, reject) =>
+          setTimeout(() => {
+            resolve()
+          }, 100)
+        )
+      )
+    )
+  })
 
   channel.on('message', async (topic, buffer) => {
     if (topics.END === topic) {

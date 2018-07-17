@@ -66,8 +66,6 @@ export const initialState = {
   loading: false
 }
 
-const _domains = [{ placeholder: true }, { placeholder: true }, { placeholder: true }]
-
 export const reducer = (state, action) => {
   switch (action.type) {
     case SET_SEED:
@@ -83,7 +81,7 @@ export const reducer = (state, action) => {
       return {
         ...state,
         offset: 0,
-        domains: state.domains.length ? _domains : [],
+        domains: [],
         tld: action.payload
       }
     case SET_SYNONYMS:
@@ -96,13 +94,12 @@ export const reducer = (state, action) => {
       return {
         ...state,
         offset: 0,
-        domains: state.domains.length ? _domains : [],
+        domains: [],
         mode: action.payload
       }
     case SET_DOMAINS:
-      let names = state.domains.map(domain => domain.name)
       let domains = state.domains.concat(action.payload.filter(domain => {
-        return !names.includes(domain.name)
+        return !state.domains.some(({ name }) => name === domain.name)
       }))
       return { ...state, domains: domains, loading: false }
     case SET_OFFSET:

@@ -6,7 +6,7 @@
     "lint": "standard \"src/**/*.js\" --fix --parser babel-eslint | snazzy",
     "dev": "parcel src/index.html",
     "clean": "rimraf dist && rimraf .cache",
-    "build": "parcel build src/index.html --public-url /staging/"
+    "build": "parcel build src/index.html --public-url /"
   },
   "dependencies": {
     "body-parser": "^1.18.3",

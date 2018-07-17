@@ -12,6 +12,7 @@
   "dependencies": {
     "aws4": "^1.6.0",
     "cuid": "^1.3.8",
+    "domain-avail": "0.0.6",
     "google-autosuggest": "^0.0.12",
     "mqtt": "^2.11.0",
     "namist": "^0.0.8",
