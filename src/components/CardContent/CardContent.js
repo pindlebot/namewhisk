@@ -1,15 +1,22 @@
 import React from 'react'
 import TrendChart from '../TrendChart'
-import Client from '../../lib/client'
 import 'isomorphic-fetch';
+
+const BASE_URI = 'https://1oqkke2wfd.execute-api.us-east-1.amazonaws.com/dev'
+
+const _fetch = (id, { endpoint }) => {
+  let url = `${BASE_URI}/${endpoint}/${id}`
+  return fetch(url)
+    .then(resp => resp.json())
+}
 
 class Stats extends React.Component {
   state = {
     data: []
   }
+
   async componentDidMount () {
-    let client = new Client(this.props)
-    let { data } = await client.fetch(this.props.domain.keyword, { endpoint: 'lookup' })
+    let { data } = await _fetch(this.props.domain.keyword, { endpoint: 'lookup' })
     this.setState({ data })
   }
   

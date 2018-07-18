@@ -62,7 +62,7 @@ module.exports.handler = async (
   let endingInvocation = false
   let timeout
   let executionCheckInterval
-
+  let endPromise
   console.log('Invoked with data: ', channelId, options)
 
   const topics = {
@@ -76,34 +76,41 @@ module.exports.handler = async (
   channel.on('error', error => console.log('WebSocket error', error))
   channel.on('offline', () => console.log('WebSocket offline'))
   const handleMessage = createHandler({ channel, topics })
+
   const end = (topicEndData = {}) => {
-    if (!endingInvocation) {
-      endingInvocation = true
-      clearInterval(executionCheckInterval)
-      clearTimeout(timeout)
+    endPromise = new Promise((resolve, reject) => {
+      if (!endingInvocation) {
+        endingInvocation = true
+        clearInterval(executionCheckInterval)
+        clearTimeout(timeout)
 
-      channel.unsubscribe(topics.END, () => {
-        channel.publish(topics.END, JSON.stringify({
-          channelId,
-          chrome: true,
-          ...topicEndData
-        }), {
-          qos: 0
-        }, async () => {
-          channel.end()
-
-          callback()
+        channel.unsubscribe(topics.END, () => {
+          channel.publish(topics.END, JSON.stringify({
+            channelId,
+            chrome: true,
+            ...topicEndData
+          }), {
+            qos: 0
+          }, async () => {
+            channel.end(() => {
+              resolve(callback())
+            })
+          })
         })
-      })
-    }
+      }
+    })
+    return endPromise
   }
 
-  const newTimeout = () => setTimeout(async () => {
-    console.log('Timing out. No requests received for 30 seconds.')
-    await end({
-      inactivity: true
-    })
-  }, 30000)
+  const newTimeout = () => {
+    return setTimeout(
+      async () => {
+        console.log('Timing out. No requests received for 30 seconds.')
+        await end({
+          inactivity: true
+        })
+      }, 30000)
+  }
 
   executionCheckInterval = setInterval(async () => {
     let remaining = context.getRemainingTimeInMillis()
@@ -133,9 +140,22 @@ module.exports.handler = async (
   const waitForMessages = () => new Promise(async (resolve, reject) => {
     if (!listener) {
       listener = channel.on('message', async (topic, buffer) => {
-        if (topics.REQUEST === topic && !endingInvocation) {
-          let promise = handleMessage({ topic, buffer })
-          queue.push(promise)
+        switch (topic) {
+          case topics.REQUEST:
+            if (!endingInvocation) {
+              let promise = handleMessage({ topic, buffer })
+              queue.push(promise)
+            }
+            break
+          case topics.END:
+            const message = buffer.toString()
+            const data = JSON.parse(message)
+            console.log(`Message from ${topics.END}`, message)
+            console.log(
+              `Client ${data.disconnected ? 'disconnected' : 'ended session'}.`
+            )
+            await end()
+            console.log('Ended successfully.')
         }
       })
     }
@@ -155,25 +175,10 @@ module.exports.handler = async (
     )
   })
 
-  channel.on('message', async (topic, buffer) => {
-    if (topics.END === topic) {
-      const message = buffer.toString()
-      const data = JSON.parse(message)
-
-      console.log(`Message from ${topics.END}`, message)
-      console.log(
-        `Client ${data.disconnected ? 'disconnected' : 'ended session'}.`
-      )
-
-      await end()
-
-      console.log('Ended successfully.')
-    }
-  })
-
   while (true) {
     if (endingInvocation) {
-      return
+      await endPromise
+      break
     }
     await waitForMessages()
   }

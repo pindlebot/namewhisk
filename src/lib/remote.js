@@ -1,12 +1,14 @@
 
 import mqtt from 'mqtt'
 import 'isomorphic-fetch'
+import assign from 'lodash.assign'
 
 class Remote {
   constructor (options) {
     this.options = options
     this.subscription = undefined
-    this.connection = undefined
+    this.connection = this.initConnection()
+    this.shouldReconnect = false
   }
 
   async initConnection () {
@@ -40,7 +42,9 @@ class Remote {
             payload: JSON.stringify({ channelId }),
             qos: 1,
             retain: false
-          }
+          },
+          // connectTimeout: 0,
+          resubscribe: true
         })
 
         this.channel = channel
@@ -49,7 +53,6 @@ class Remote {
           channel.on('error', error => console.log('WebSocket error', error))
           channel.on('offline', () => console.log('WebSocket offline'))
         }
-
         channel.on('connect', () => {
           if (this.options.debug) {
             console.log('Connected to message broker.')
@@ -73,6 +76,7 @@ class Remote {
 
           channel.subscribe(this.topics.END, () => {
             channel.on('message', async (topic, buffer) => {
+              console.log({ topic, message: buffer.toString() })
               if (this.topics.END === topic) {
                 const message = buffer.toString()
                 const data = JSON.parse(message)
@@ -106,7 +110,8 @@ class Remote {
     })
   }
 
-  subscribe (update)  {
+  subscribe (update) {
+    this.update = update
     this.channel.on('message', (topic, buffer) => {
       console.log(buffer.toString())
       if (this.topics.RESPONSE === topic) {
@@ -124,33 +129,63 @@ class Remote {
     })
   }
 
-  async publish (data) {
+  async reconnectIfNeeded () {
     if (this.subscription) {
-      if (!this.channel.connected) {
-        console.log('reconnecting....')
-        await this.connect()
+      if (!this.channel.connected || this.channel.disconnecting) {
+        this.shouldReconnect = true
       }
     }
+  }
+
+  async publish (data) {
+    await this.reconnectIfNeeded()
+    await this.connection
+    console.log('publish', this)
+    this._lastData = data
     return new Promise((resolve, reject) =>
       this.channel.publish(this.topics.REQUEST, JSON.stringify(data), resolve))
   }
 
   async connect () {
-    this.connection = await this.initConnection()
+    await this.connection
     this.subscription = await new Promise((resolve, reject) =>
-      this.channel.subscribe(this.topics.RESPONSE, resolve))
+      this.channel.subscribe(this.topics.RESPONSE, () => resolve(true)))
+    this.channel.on('close', () => {
+      console.log('CLOSED', this.channelId)
+    })
+    this.channel.on('end', () => {
+      console.log('END', this.channelId)
+    })
+    this.channel.on('offline', () => {
+      console.log('OFFLINE', this.channelId)
+    })
+    this.channel.on('reconnect', () => {
+      console.log('RECONNECT', this.channelId)
+    })
     return this
   }
 
   async close () {
+    this.shouldReconnect = false
+    console.log('Closing connection...')
     this.channel.publish(
       this.TOPIC_END,
       JSON.stringify({ channelId: this.channelId, client: true })
     )
-    this.channel.on('close', () => {
-      console.log('Successfully closed')
+    this.channel.end(async () => {
+      while (true) {
+        if (this.shouldReconnect) {
+          this.shouldReconnect = false
+          this.connection = this.initConnection()
+          await this.connect()
+          this.subscribe(this.update)
+          await this.publish(this._lastData)
+          break
+        } else {
+          await new Promise((resolve, reject) => setTimeout(resolve, 1000))
+        }
+      }
     })
-    this.channel.end()
   }
 
   end () {

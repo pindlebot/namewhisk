@@ -34,39 +34,32 @@ provider:
       Resource: "*"
 
 functions:
-  suggest:
-    handler: src/handler.suggest
-    events:
-      - http:
-          path: suggest
-          method: get
-          cors: true
   trends:
     handler: src/handler.trends
     events:
       - http:
-          path: trends
+          path: trends/{id}
           method: get
           cors: true
   lookup:
     handler: src/handler.lookup
     events:
       - http:
-          path: lookup
+          path: lookup/{id}
           method: get
           cors: true
   stats:
     handler: src/handler.stats
     events:
       - http:
-          path: stats
+          path: stats/{id}
           method: get
           cors: true
   synonyms:
     handler: src/handler.synonyms
     events:
       - http:
-          path: synonyms
+          path: synonyms/{id}
           method: get
           cors: true
    

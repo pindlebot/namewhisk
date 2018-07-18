@@ -1,5 +1,4 @@
 import React from 'react'
-import client from '../../lib/client'
 import debounce from 'lodash.debounce'
 
 class SearchInput extends React.Component {
@@ -23,17 +22,14 @@ class SearchInput extends React.Component {
           clearTimeout(this.timer)
           delete this.timer
         })
-      }, 600)
+      }, 1000)
     }
   }
 
   debounced = debounce(() => {
     if (!this.state.value) return
-      this.setState({ active: true }, () => {
-      this.props.setSeed({ value: this.state.value })
-    })
-  }
-, 500)
+      this.update()
+  }, 1000)
 
   update = () => {
     this.setState({ active: true }, () => {

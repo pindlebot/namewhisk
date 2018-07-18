@@ -17,7 +17,6 @@ import {
 } from '../../lib/store'
 import SelectTld from '../../components/SelectTld'
 import SelectSynonym from '../../components/SelectSynonym'
-import Client from '../../lib/client'
 import Card from '../../components/Card'
 import Results from '../../components/Results'
 import Hero from '../../components/Hero'
@@ -41,51 +40,35 @@ class App extends React.Component {
       nextProps.tld !== this.props.tld
   }
 
-  createConnection = async () => {
-    const params = {
+  async componentDidMount () {
+    this.remote = new Remote({
       endpointUrl: ENDPOINT_URL,
       debug: true
-    }
-
-    if (
-      this.subscription
-    ) {
-      return this.subscription
-    }
-
-    this.remote = new Remote(params)
-    this.subscription = await this.remote.connect()
-    this.subscription.subscribe(this.update.bind(this))
-  }
-
-  componentDidMount () {
-    this.createConnection()
+    })
+    await this.remote.connect()
+    this.remote.subscribe(this.update.bind(this))
   }
 
   async componentDidUpdate (prevProps, prevState) {
-    console.log('componentDidUpdate',this)
     if (
       this.props.seed &&
       !this._isInFlight
     ) {
       this._isInFlight = true
       this.props.setLoading(true)
-      await this.createConnection()
-      const params = {
+      await this.remote.publish({
         name: this.props.seed,
         tld: this.props.tld,
         offset: this.props.offset,
         limit: 10,
         mode: this.props.mode
-      }
-      await this.subscription.publish(params)
+      })
     }
   }
 
   update = (domains) => {
     if (domains.length) {
-      let p = this.props.setDomains(domains)
-      console.log({ p })
+      this.props.setDomains(domains)
     } else {
       this.props.setOffset(this.props.offset + 10)
     }
@@ -99,7 +82,6 @@ class App extends React.Component {
   }
 
   render () {
-    console.log(this.props)
     return (
       <React.Fragment>
         <Header />

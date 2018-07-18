@@ -53,17 +53,14 @@ const createResponse = (message = {}) => ({
 })
 
 const handler = {
-  suggest: ({ keyword }) => {
-    return require('google-autosuggest')(keyword)
-  },
-  lookup: ({ keyword }) => {
+  lookup: (keyword) => {
     const url = `http://api.grepwords.com/lookup?apikey=${GREPWORDS_API_KEY}&q=${keyword}`
     return fetch(url, {
       method: 'get'
     }).then(resp => resp.json())
       .then(resp => formatLookup(resp))
   },
-  stats: ({ keyword }) => {
+  stats: (keyword) => {
     const url = `https://webknox-keywords.p.mashape.com/keywords/${keyword}`
     console.log(url)
     return fetch(url, {
@@ -78,11 +75,11 @@ const handler = {
         return resp
       })
   },
-  trends: ({ keyword }) => {
+  trends: (keyword) => {
     keyword = keyword.replace('+', ' ')
     return googleTrends.interestOverTime({ keyword: keyword })
   },
-  synonyms: ({ word }) => {
+  synonyms: (word) => {
     const url = `https://wordsapiv1.p.mashape.com/words/${word}/synonyms`
     return fetch(url, {
       method: 'get',
@@ -94,27 +91,16 @@ const handler = {
   }
 }
 
-function endpoint (name, shouldCache = true) {
-  return async function (evt, ctx, cb) {
-    let { queryStringParameters } = evt
-    if (!Object.keys(queryStringParameters || {}).length) {
-      return cb(null, createResponse({ error: 'missing parameters' }))
-    }
-    let data = {}
-    try {
-      data = await handler[name](queryStringParameters)
-      console.log(data)
-    } catch (error) {
-      console.error(error)
-      data = { error }
-    }
+const endpoint = name => (evt, ctx, cb) => {
+  const { id } = (evt && evt.pathParameters) || {}
+  handler[name](id).then(data => {
     cb(null, createResponse(data))
-  }
+  }).catch(error => {
+    cb(null, createResponse(error))
+  })
 }
 
-module.exports.suggest = endpoint('suggest')
 module.exports.lookup = endpoint('lookup')
 module.exports.stats = endpoint('stats')
 module.exports.trends = endpoint('trends')
-module.exports.domains = endpoint('domains')
 module.exports.synonyms = endpoint('synonyms')

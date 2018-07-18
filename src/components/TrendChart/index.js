@@ -1,6 +1,5 @@
 import React from 'react'
 import { Line } from 'react-chartjs-2'
-import Client from '../../lib/client'
 import Spinner from '../Spinner'
 import Chart from 'chart.js'
 
@@ -60,12 +59,6 @@ class TrendChart extends React.Component {
     }
     return (
       <div className='trends'>
-        {/*<Line
-          data={this.props.data}
-          options={OPTIONS}
-          width={160}
-          height={100}
-        />*/}
         <canvas
           ref={this.ref}
           height={100}
