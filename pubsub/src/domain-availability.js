@@ -1,13 +1,12 @@
 const fetch = require('node-fetch')
 const AWS = require('aws-sdk')
-const avail = require('domain-avail')
+const whois = require('whois-2')
 
 const {
   DNS_SIMPLE_ENDPOINT,
   DNS_SIMPLE_TOKEN
 } = process.env
-const { DynamoDB } = require('aws-sdk')
-const documentClient = new DynamoDB.DocumentClient({
+const documentClient = new AWS.DynamoDB.DocumentClient({
   region: 'us-east-1'
 })
 
@@ -60,14 +59,14 @@ const awsCheckDomainAvailability = ({ domain }) => {
     .then(({ Availability }) => {
       switch (Availability) {
         case 'AVAILABLE':
-          return true
+          return { availble: true }
         default:
-          return false
+          return { available: false }
       }
     })
     .catch(err => {
       console.log(err)
-      return true
+      return { available: true }
     })
 }
 
@@ -84,7 +83,8 @@ const dnsSimple = ({ name, tld }) => {
         console.log('DNS Simple Message', message)
         return awsCheckDomainAvailability({ domain })
       }
-      return data.available
+      let { available } = data
+      return { available }
     })
     .catch(err => {
       console.log(err)
@@ -92,41 +92,56 @@ const dnsSimple = ({ name, tld }) => {
     })
 }
 
-const updateDomain = ({ name, tld, available }) => {
+const updateDomain = (name, { tld, available, ...rest }) => {
+
   let params = {
     id: name,
-    [tld]: available,
-    date: Math.floor(Date.now() / 1000)
+    [tld]: {
+      available,
+      ...(rest || {})
+    },
+    date: Math.floor(Date.now() / 1000),
   }
   console.log('updateDomain', params)
   return set(params).then(() => params)
 }
 
-const nativeDnsResolve = ({ name, tld }) => {
-  return new Promise((resolve, reject) => {
-    require('dns').resolve(`${name}.${tld}`, (err, data) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(false)
-      }
-    })
-  })
-}
-
 const fallback = async ({ name, tld }) => {
-  let available
+  let data = {}
   try {
-    available = await avail(`${name}.${tld}`)
-      .then(data => data.available)
+    data = await whois(`${name}.${tld}`, { format: 'json' })
+      .then(whoisData => {
+        let data = {}
+        data.available = !Object.keys(whoisData).length
+        data.expiry = (whoisData.registry_expiry_date || 0)
+        return data
+      })
   } catch (err) {
     console.log(err)
-    available = await dnsSimple({ name, tld })
+    data = await dnsSimple({ name, tld })
   }
-  available = typeof available === 'boolean'
-    ? available
-    : true
-  return updateDomain({ name, tld, available })
+
+  return updateDomain(name, { tld, ...data })
+}
+
+const shouldFallback = ({ name, tld }, data) => {
+  if (data && typeof data[tld] === 'object') {
+    if (!(data[tld].expiry && data[tld].available)) {
+      return true
+    }
+    if (data[tld].expiry) {
+      let expiry = new Date(data[tld].expiry).getTime()
+      if (expiry > Date.now() + 24 * 60 * 60 * 1000) {
+        return false
+      }
+    }
+    if (data[tld].available) {
+      if ((data.date || 0) > Math.floor(Date.now() / 1000) - 24 * 60 * 60 * 1000) {
+        return false
+      }
+    }
+  }
+  return true
 }
 
 async function checkDomainAvailability ({ name, tld }) {
@@ -135,14 +150,8 @@ async function checkDomainAvailability ({ name, tld }) {
   }
   let domain = `${name}.${tld}`
   let data = await getDomain({ name })
-  let expiry = Math.floor(Date.now() / 1000) - 24 * 60 * 60
-  if (
-    !(
-      data &&
-      typeof data[tld] !== 'undefined' &&
-      (data.date || 0) > expiry
-    )
-  ) {
+
+  if (shouldFallback({ name, tld }, data)) {
     data = await fallback({ name, tld })
   }
 
@@ -150,7 +159,7 @@ async function checkDomainAvailability ({ name, tld }) {
     name,
     tld,
     domain,
-    available: data[tld],
+    available: data[tld].available,
     ...data
   }
 }

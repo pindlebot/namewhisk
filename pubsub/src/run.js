@@ -30,7 +30,7 @@ const createHandler = ({ channel, topics }) => async ({ topic, buffer }) => {
 
   let promises = names.map(name => domainAvailability({ name, tld }))
   let data = await Promise.all(promises)
-  data = data.filter(domain => domain.available)
+  data = data.filter(domain => domain[domain.tld].available)
   try {
     await new Promise((resolve, reject) =>
       channel.publish(

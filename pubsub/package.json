@@ -12,12 +12,12 @@
   "dependencies": {
     "aws4": "^1.6.0",
     "cuid": "^1.3.8",
-    "domain-avail": "0.0.6",
     "google-autosuggest": "^0.0.12",
     "mqtt": "^2.11.0",
     "namist": "^0.0.8",
     "node-fetch": "^2.1.2",
-    "prefix-suffix": "^0.0.1"
+    "prefix-suffix": "^0.0.1",
+    "whois-2": "^0.0.7"
   },
   "devDependencies": {
     "aws-sdk": "^2.275.1",

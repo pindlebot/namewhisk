@@ -45,7 +45,7 @@ class App extends React.Component {
       endpointUrl: ENDPOINT_URL,
       debug: true
     })
-    await this.remote.connect()
+    await this.remote.connectionPromise
     this.remote.subscribe(this.update.bind(this))
   }
 
