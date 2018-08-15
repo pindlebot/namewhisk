@@ -20,7 +20,7 @@ import SelectSynonym from '../../components/SelectSynonym'
 import Card from '../../components/Card'
 import Results from '../../components/Results'
 import Hero from '../../components/Hero'
-import Remote from '../../lib/remote'
+import remote from '../../lib/remote'
 
 const ENDPOINT_URL = 'https://pr4yxzklrj.execute-api.us-east-1.amazonaws.com/dev/'
 
@@ -41,21 +41,20 @@ class App extends React.Component {
   }
 
   async componentDidMount () {
-    this.remote = new Remote({
-      endpointUrl: ENDPOINT_URL,
-      debug: true
-    })
-    await this.remote.connectionPromise
+    this.remote = remote()
     this.remote.subscribe(this.update.bind(this))
   }
 
   async componentDidUpdate (prevProps, prevState) {
     if (
       this.props.seed &&
-      !this._isInFlight
+      this.props.action !== 'SET_DOMAINS' &&
+      this.props.action !== 'SET_LOADING'
     ) {
-      this._isInFlight = true
-      this.props.setLoading(true)
+      if (!this.props.loading) {
+        this.props.setLoading(true)
+      }
+      console.log('publishing', this.props)
       await this.remote.publish({
         name: this.props.seed,
         tld: this.props.tld,
@@ -72,9 +71,6 @@ class App extends React.Component {
     } else {
       this.props.setOffset(this.props.offset + 10)
     }
-    setTimeout(() => {
-      this._isInFlight = false
-    }, 0)
   }
 
   async componentWillUnmount () {

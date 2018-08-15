@@ -7,7 +7,10 @@ const {
 } = require('./utils')
 const domainAvailability = require('./domain-availability')
 
-const createHandler = ({ channel, topics }) => async ({ topic, buffer }) => {
+const topics = {}
+let channel
+
+const handleMessage = async ({ topic, buffer }) => {
   const message = buffer.toString()
   console.log(`Message from ${topics.REQUEST}`, message)
   const {
@@ -62,124 +65,84 @@ module.exports.handler = async (
   let endingInvocation = false
   let timeout
   let executionCheckInterval
-  let endPromise
+  let resolveExecution
+  let promise = new Promise((resolve, reject) => {
+    resolveExecution = resolve
+  })
   console.log('Invoked with data: ', channelId, options)
 
-  const topics = {
-    CONNECTED: `namewhisk/${channelId}/connected`,
-    REQUEST: `namewhisk/${channelId}/request`,
-    RESPONSE: `namewhisk/${channelId}/response`,
-    END: `namewhisk/${channelId}/end`
-  }
+  topics.CONNECTED = `namewhisk/${channelId}/connected`
+  topics.REQUEST = `namewhisk/${channelId}/request`
+  topics.RESPONSE = `namewhisk/${channelId}/response`
+  topics.END = `namewhisk/${channelId}/end`
 
-  const channel = mqtt.connect(createPresignedURL())
+  channel = mqtt.connect(createPresignedURL())
   channel.on('error', error => console.log('WebSocket error', error))
   channel.on('offline', () => console.log('WebSocket offline'))
-  const handleMessage = createHandler({ channel, topics })
 
   const end = (topicEndData = {}) => {
-    endPromise = new Promise((resolve, reject) => {
-      if (!endingInvocation) {
-        endingInvocation = true
-        clearInterval(executionCheckInterval)
-        clearTimeout(timeout)
+    if (!endingInvocation) {
+      endingInvocation = true
+      clearInterval(executionCheckInterval)
+      clearTimeout(timeout)
 
-        channel.unsubscribe(topics.END, () => {
-          channel.publish(topics.END, JSON.stringify({
-            channelId,
-            chrome: true,
-            ...topicEndData
-          }), {
-            qos: 0
-          }, async () => {
-            channel.end(() => {
-              resolve(callback())
-            })
-          })
+      channel.unsubscribe(topics.END, () => {
+        channel.publish(topics.END, JSON.stringify({
+          channelId,
+          ...topicEndData
+        }), {
+          qos: 0
+        }, () => {
+          channel.end(resolveExecution)
         })
-      }
-    })
-    return endPromise
+      })
+    }
   }
 
-  const newTimeout = () => {
-    return setTimeout(
-      async () => {
-        console.log('Timing out. No requests received for 30 seconds.')
-        await end({
-          inactivity: true
-        })
-      }, 30000)
-  }
+  const newTimeout = () =>
+    setTimeout(() => {
+      console.log('Timing out. No requests received for 30 seconds.')
+      end({ inactivity: true })
+    }, 30000)
 
   executionCheckInterval = setInterval(async () => {
     let remaining = context.getRemainingTimeInMillis()
     if (remaining < 5000) {
       console.log('Ran out of execution time.')
-      await end({
-        outOfTime: true
-      })
+      end({ outOfTime: true })
     }
   }, 1000)
 
   await connect({ channel })
 
   console.log('Connected to AWS IoT broker')
+  await subscribe({ channel, topic: topics.REQUEST })
+  await subscribe({ channel, topic: topics.END })
 
   channel.publish(topics.CONNECTED, JSON.stringify({}), {
     qos: 1
   })
 
-  await subscribe({ channel, topic: topics.REQUEST })
-  await subscribe({ channel, topic: topics.END })
-
-  const queue = []
-  let listener
   timeout = newTimeout()
-
-  const waitForMessages = () => new Promise(async (resolve, reject) => {
-    if (!listener) {
-      listener = channel.on('message', async (topic, buffer) => {
-        switch (topic) {
-          case topics.REQUEST:
-            if (!endingInvocation) {
-              let promise = handleMessage({ topic, buffer })
-              queue.push(promise)
-            }
-            break
-          case topics.END:
-            const message = buffer.toString()
-            const data = JSON.parse(message)
-            console.log(`Message from ${topics.END}`, message)
-            console.log(
-              `Client ${data.disconnected ? 'disconnected' : 'ended session'}.`
-            )
-            await end()
-            console.log('Ended successfully.')
-        }
-      })
+  channel.on('message', async (topic, buffer) => {
+    if (topic === topics.REQUEST) {
+      if (!endingInvocation) {
+        clearTimeout(timeout)
+        timeout = newTimeout()
+        await handleMessage({ topic, buffer })
+      }
     }
 
-    if (queue.length) {
-      clearTimeout(timeout)
-      await queue.shift()
-      timeout = newTimeout()
-      return resolve()
-    }
-    resolve(
-      new Promise((resolve, reject) =>
-        setTimeout(() => {
-          resolve()
-        }, 0)
+    if (topic === topics.END) {
+      const message = buffer.toString()
+      const data = JSON.parse(message)
+      console.log(`Message from ${topics.END}`, message)
+      console.log(
+        `Client ${data.disconnected ? 'disconnected' : 'ended session'}.`
       )
-    )
-  })
-
-  while (true) {
-    if (endingInvocation) {
-      await endPromise
-      break
+      end()
+      console.log('Ended successfully.')
     }
-    await waitForMessages()
-  }
+  })
+  await promise.then(() => callback(null))
 }

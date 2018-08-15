@@ -63,7 +63,8 @@ export const initialState = {
   stats: [],
   mode: 'whimsical',
   offset: 0,
-  loading: false
+  loading: false,
+  action: ''
 }
 
 export const reducer = (state, action) => {
@@ -73,39 +74,65 @@ export const reducer = (state, action) => {
         ...state,
         offset: 0,
         domains: [],
-        seed: action.payload
+        seed: action.payload,
+        action: action.type
       }
     case SET_KEYWORDS:
-      return { ...state, keywords: action.payload }
+      return {
+        ...state,
+        keywords: action.payload,
+        action: action.type
+      }
     case SET_TLD:
       return {
         ...state,
         offset: 0,
         domains: [],
-        tld: action.payload
+        tld: action.payload,
+        action: action.type
       }
     case SET_SYNONYMS:
-      return { ...state, synonyms: action.payload }
+      return {
+        ...state,
+        synonyms: action.payload,
+        action: action.type
+      }
     case SET_STATS:
-      return { ...state, stats: action.payload }
+      return {
+        ...state,
+        stats: action.payload,
+        action: action.type
+      }
     case SET_LOADING:
-      return { ...state, loading: action.payload }
+      return {
+        ...state,
+        loading: action.payload,
+        action: action.type
+      }
     case SET_SEARCH_MODE:
       return {
         ...state,
         offset: 0,
         domains: [],
-        mode: action.payload
+        mode: action.payload,
+        action: action.type
       }
     case SET_DOMAINS:
       let domains = state.domains.concat(action.payload.filter(domain => {
         return !state.domains.some(({ name }) => name === domain.name)
       }))
-      return { ...state, domains: domains, loading: false }
+      return {
+        ...state,
+        domains: domains,
+        loading: false,
+        action: action.type
+      }
     case SET_OFFSET:
       return {
         ...state,
-        offset: action.payload
+        loading: false,
+        offset: action.payload,
+        action: action.type
       }
     default:
       return state

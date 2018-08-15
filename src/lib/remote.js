@@ -1,193 +1,108 @@
 
 import mqtt from 'mqtt'
 import 'isomorphic-fetch'
-import assign from 'lodash.assign'
 
-class Remote {
-  constructor (options) {
-    this.options = options
-    this.connectionPromise = this.init()
-    this._shouldReconnect = false
-  }
+const topics = {
+  SESSION: 'namewhisk/new-session'
+}
 
-  timeout () {
-    return new Promise((resolve, reject) => {
-      this.timerID = setTimeout(() => {
-        if (this.channel) {
-          this.channel.end()
-        }
-        reject(
-          new Error(
-            "Timed out after 30sec. Connection couldn't be established.",
-          )
-        )
-      }, 30000)
+let channel
+
+const ENDPOINT_URL = 'https://pr4yxzklrj.execute-api.us-east-1.amazonaws.com/dev/'
+
+export default () => {
+  let callback
+
+  const connect = async () => {
+    console.log(channel)
+    if (channel && channel.connected) {
+      return
+    }
+
+    const data = await fetch(ENDPOINT_URL).then(resp => resp.json())
+    const { url, channelId } = data
+    topics.CONNECTED = `namewhisk/${channelId}/connected`
+    topics.REQUEST = `namewhisk/${channelId}/request`
+    topics.RESPONSE = `namewhisk/${channelId}/response`
+    topics.END = `namewhisk/${channelId}/end`
+    channel = mqtt.connect(url)
+    channel.on('error', error => console.log('WebSocket error', error))
+    channel.on('offline', () => console.log('WebSocket offline'))
+    channel.on('close', () => {
+      console.log('CLOSED', channelId)
     })
-  }
-
-  init () {
-    return new Promise(async (resolve, reject) => {
-      this.timeout().catch(reject)
-
-      try {
-        const { endpointUrl } = this.options
-        const data = await fetch(endpointUrl).then(resp => resp.json())
-        const { url, channelId } = data
-        this.channelId = channelId
-        this.topics = {
-          NEW_SESSION: `namewhisk/new-session`,
-          CONNECTED: `namewhisk/${channelId}/connected`,
-          REQUEST: `namewhisk/${channelId}/request`,
-          RESPONSE: `namewhisk/${channelId}/response`,
-          END: `namewhisk/${channelId}/end`
-        }
-        const channel = mqtt.connect(url, {
-          will: {
-            topic: 'namewhisk/last-will',
-            payload: JSON.stringify({ channelId }),
-            qos: 1,
-            retain: false
-          },
-          resubscribe: true
-        })
-
-        this.channel = channel
-
-        if (this.options.debug) {
-          this.log()
-        }
-
-        channel.on('connect', async () => {
-          channel.subscribe(this.topics.CONNECTED, { qos: 1 }, () => {
-            channel.on('message', async topic => {
-              console.log(topic)
-              if (this.topics.CONNECTED === topic) {
-                clearTimeout(this.timerID)
-                channel.subscribe(this.topics.RESPONSE, () => resolve(true))
-              }
-            })
-
-            channel.publish(
-              this.topics.NEW_SESSION,
-              JSON.stringify({ channelId, options: this.options }),
-              { qos: 1 }
-            )
-          })
-
-          channel.subscribe(this.topics.END, () => {
-            channel.on('message', async (topic, buffer) => {
-              if (this.topics.END === topic) {
-                const message = buffer.toString()
-                const data = JSON.parse(message)
-
-                if (data.outOfTime) {
-                  console.warn(
-                    `Proxy disconnected because it reached it's execution time limit (5 minutes).`
-                  )
-                } else if (data.inactivity) {
-                  console.warn(
-                    'Proxy disconnected due to inactivity (no commands sent for 30 seconds).'
-                  )
-                } else {
-                  console.warn(
-                    `Proxy disconnected (we don't know why).`,
-                    data
-                  )
-                }
-                await this.close()
-              }
-            })
-          })
-        })
-      } catch (error) {
-        console.error(error)
-
-        reject(
-          new Error('Unable to get presigned websocket URL and connect to it.')
-        )
-      }
+    channel.on('end', () => {
+      console.log('END', channelId)
     })
+    channel.on('offline', () => {
+      console.log('OFFLINE', channelId)
+    })
+    channel.on('reconnect', () => {
+      console.log('RECONNECT', channelId)
+    })
+    await new Promise((resolve, reject) => channel.on('connect', resolve))
+    await new Promise((resolve, reject) => channel.subscribe(topics.CONNECTED, resolve))
+    await new Promise((resolve, reject) => channel.subscribe(topics.RESPONSE, resolve))
+    await new Promise((resolve, reject) => channel.subscribe(topics.END, resolve))
+    await new Promise((resolve, reject) => {
+      channel.publish(topics.SESSION, JSON.stringify({ channelId }), { qos: 1 }, resolve)
+    })
+
+    return new Promise((resolve, reject) =>
+      channel.on('message', (topic, message) => {
+        if (topic === topics.CONNECTED) {
+          resolve()
+        }
+      })
+    )
   }
 
-  subscribe (update) {
-    console.log('subscribing')
-    this._update = update
-    this.channel.on('message', (topic, buffer) => {
-      console.log(buffer.toString())
-      if (this.topics.RESPONSE === topic) {
+  const subscribe = async (update) => {
+    callback = update
+    await connect()
+    channel.on('message', (topic, buffer) => {
+      console.log({ topic, message: buffer.toString() })
+      if (topics.RESPONSE === topic) {
         const message = buffer.toString()
         const result = JSON.parse(message)
 
         if (result.error) {
-          update(result.error)
+          callback(result.error)
         } else if (result.value) {
-          update(result.value)
+          callback(result.value)
         } else {
-          update()
+          callback()
         }
       }
+
+      if (topics.END === topic) {
+        channel.end()
+      }
     })
-    return this
   }
 
-  async connectIfNeeded () {
-    if (this.channel) {
-      if (!this.channel.connected || this.channel.disconnecting) {
-        this._shouldReconnect = true
-        return new Promise((resolve, reject) =>
-          setTimeout(async () => {
-            await this.connectionPromise
-            this.subscribe(this._update)
-            resolve()
-          }, 1000))
+  const publish = async (data) => {
+    await connect()
+    if (callback) {
+      if (channel._resubscribeTopics[topics.RESPONSE] !== 0) {
+        await subscribe(callback)
       }
     }
-    return this.connectionPromise
-  }
-
-  async publish (data) {
-    await this.connectIfNeeded()
-    console.log('publishing', data)
     return new Promise((resolve, reject) =>
-      this.channel.publish(this.topics.REQUEST, JSON.stringify(data), resolve))
+      channel.publish(topics.REQUEST, JSON.stringify(data), resolve))
   }
 
-  log () {
-    this.channel.on('error', error => console.log('WebSocket error', error))
-    this.channel.on('offline', () => console.log('WebSocket offline'))
-    this.channel.on('close', () => {
-      console.log('CLOSED', this.channelId)
-    })
-    this.channel.on('end', () => {
-      console.log('END', this.channelId)
-    })
-    this.channel.on('offline', () => {
-      console.log('OFFLINE', this.channelId)
-    })
-    this.channel.on('reconnect', () => {
-      console.log('RECONNECT', this.channelId)
-    })
-  }
-
-  async close () {
-    this._shouldReconnect = false
-    console.log('Closing connection...')
-    this.channel.publish(
-      this.TOPIC_END,
-      JSON.stringify({ channelId: this.channelId, client: true })
+  const end = () => {
+    return new Promise((resolve, reject) =>
+      channel.publish(topics.END, JSON.stringify({}), { qos: 0 }, () => {
+        channel.end(resolve)
+      })
     )
-    this.channel.end(async () => {
-      while (this._shouldReconnect) {
-        await new Promise((resolve, reject) => setTimeout(resolve, 100))
-      }
-      this.connectionPromise = await this.init()
-      this._shouldReconnect = false
-    })
   }
 
-  end () {
-    return this.close()
+  return {
+    subscribe,
+    publish,
+    end
   }
 }
-
-export default Remote
