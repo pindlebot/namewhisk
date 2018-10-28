@@ -5,7 +5,7 @@ import Spinner from '../../components/Spinner'
 import SelectSearchType from '../../components/SelectSearchType'
 import { connect } from 'react-redux'
 import '../../css/main.scss'
-import 'react-select/dist/react-select.css'
+// import 'react-select/dist/react-select.css'
 import {
   setSeed,
   setTld,

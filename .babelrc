@@ -1,11 +1,16 @@
 {
   "presets": [
-    "env",
-    "react"
+    ["@babel/preset-env", {
+      "targets": "> 0.25%, not dead"
+    }],
+    "@babel/preset-react",
+    "@babel/preset-flow"
   ],
   "plugins": [
-    "transform-object-rest-spread",
-    "transform-class-properties",
-    "transform-runtime"
+    ["@babel/plugin-transform-flow-strip-types", {}, "strip-types"],
+    ["@babel/plugin-transform-runtime", {}, "transform-runtime"],
+    ["@babel/plugin-proposal-object-rest-spread", {}, "rest-spread"],
+    ["@babel/plugin-proposal-class-properties", {}, "class-properties"],
+    ["@babel/plugin-proposal-optional-chaining", {}, "optional-chaining"]
   ]
 }

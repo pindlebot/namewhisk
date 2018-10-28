@@ -1,10 +1,12 @@
 service: namewhisk-pubsub
+
 plugins:
   - serverless-dotenv-plugin
 
 custom:
   stage: dev
   debug: "*"
+  deploymentBucket: 'global-deployment-bucket'
   dotenv:
     path: ./.env
     include:
@@ -21,6 +23,8 @@ provider:
   stage: ${self:custom.stage}
   region: us-east-1
   profile: default
+  deploymentBucket:
+    name: ${self:custom.deploymentBucket}
   environment:
     DEBUG: ${self:custom.debug}
   apiKeys:
