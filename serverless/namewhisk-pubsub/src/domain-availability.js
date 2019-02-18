@@ -2,10 +2,6 @@ const fetch = require('node-fetch')
 const AWS = require('aws-sdk')
 const whois = require('whois-2')
 
-const {
-  DNS_SIMPLE_ENDPOINT,
-  DNS_SIMPLE_TOKEN
-} = process.env
 const documentClient = new AWS.DynamoDB.DocumentClient({
   region: 'us-east-1'
 })
@@ -42,7 +38,6 @@ const getDomain = async ({ name }) => {
   return get({ id: name })
     .then(result => result.Item)
     .then(domain => {
-      console.log('getDomain', domain)
       if (typeof domain === 'undefined') {
         return {}
       }
@@ -70,27 +65,27 @@ const awsCheckDomainAvailability = ({ domain }) => {
     })
 }
 
-const dnsSimple = ({ name, tld }) => {
-  let domain = `${name}.${tld}`
-  console.log('dnsSimple', domain)
-  return fetch(`${DNS_SIMPLE_ENDPOINT}/${domain}/check`, {
-    headers: {
-      'Authorization': `Bearer ${DNS_SIMPLE_TOKEN}`
-    }
-  }).then(resp => resp.json())
-    .then(({ data, message }) => {
-      if (message || !data) {
-        console.log('DNS Simple Message', message)
-        return awsCheckDomainAvailability({ domain })
-      }
-      let { available } = data
-      return { available }
-    })
-    .catch(err => {
-      console.log(err)
-      return true
-    })
-}
+// const dnsSimple = ({ name, tld }) => {
+//   let domain = `${name}.${tld}`
+//   console.log('dnsSimple', domain)
+//   return fetch(`${DNS_SIMPLE_ENDPOINT}/${domain}/check`, {
+//     headers: {
+//       'Authorization': `Bearer ${DNS_SIMPLE_TOKEN}`
+//     }
+//   }).then(resp => resp.json())
+//     .then(({ data, message }) => {
+//       if (message || !data) {
+//         console.log('DNS Simple Message', message)
+//         return awsCheckDomainAvailability({ domain })
+//       }
+//       let { available } = data
+//       return { available }
+//     })
+//     .catch(err => {
+//       console.log(err)
+//       return true
+//     })
+// }
 
 const updateDomain = (name, { tld, available, ...rest }) => {
 
@@ -102,7 +97,6 @@ const updateDomain = (name, { tld, available, ...rest }) => {
     },
     date: Math.floor(Date.now() / 1000),
   }
-  console.log('updateDomain', params)
   return set(params).then(() => params)
 }
 
@@ -118,7 +112,6 @@ const fallback = async ({ name, tld }) => {
       })
   } catch (err) {
     console.log(err)
-    data = await dnsSimple({ name, tld })
   }
 
   return updateDomain(name, { tld, ...data })

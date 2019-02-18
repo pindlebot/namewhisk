@@ -7,18 +7,6 @@ const ENDPOINT_URL = 'https://pr4yxzklrj.execute-api.us-east-1.amazonaws.com/dev
 
 const TOPIC_SESSION = 'namewhisk/new-session'
 
-class Channel {
-  constructor (channel) {
-    this.channelId = cuid()
-    this.topics = {}
-    this.topics.CONNECTED = `namewhisk/${this.channelId}/connected`
-    this.topics.REQUEST = `namewhisk/${this.channelId}/request`
-    this.topics.RESPONSE = `namewhisk/${this.channelId}/response`
-    this.topics.END = `namewhisk/${this.channelId}/end`
-    this.channel = channel
-  }
-}
-
 export default () => {
   let callback
   const topics = {}
@@ -27,7 +15,6 @@ export default () => {
 
   const event = (event) =>
     new Promise((resolve, reject) => channel.on(event, (data) => {
-      console.log(event, data)
       resolve(data)
     }))
 
@@ -92,7 +79,6 @@ export default () => {
     callback = update
     await connect()
     channel.on('message', (topic, buffer) => {
-      console.log({ topic, message: buffer.toString() })
       if (topics.RESPONSE === topic) {
         const message = buffer.toString()
         const result = JSON.parse(message)
@@ -114,7 +100,6 @@ export default () => {
 
   const publish = async (data) => {
     await connect()
-    console.log(channel)
 
     return new Promise((resolve, reject) =>
       channel.publish(topics.REQUEST, JSON.stringify(data), resolve))

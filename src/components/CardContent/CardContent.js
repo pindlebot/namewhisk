@@ -16,7 +16,7 @@ class Stats extends React.Component {
   }
 
   async componentDidMount () {
-    let { data } = await _fetch(this.props.domain.keyword, { endpoint: 'lookup' })
+    let { data } = await _fetch(this.props.domain.name, { endpoint: 'lookup' })
     this.setState({ data })
   }
   
@@ -49,7 +49,6 @@ class Content extends React.Component {
       loading
     } = this.props
     if (!expanded) return false
-    console.log(this.props)
     return (
       <div className='card-content'>
         {/*<div className={'card-row'}>

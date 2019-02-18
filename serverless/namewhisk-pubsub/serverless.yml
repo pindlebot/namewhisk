@@ -10,8 +10,6 @@ custom:
   dotenv:
     path: ./.env
     include:
-      - DNS_SIMPLE_ENDPOINT
-      - DNS_SIMPLE_TOKEN
       - AWS_IOT_HOST
   namewhisk:
     functions:
