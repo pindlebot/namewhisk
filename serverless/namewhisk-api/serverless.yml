@@ -1,4 +1,4 @@
-service: domain-caviar
+service: namewhisk-api
 
 plugins:
   - serverless-dotenv-plugin

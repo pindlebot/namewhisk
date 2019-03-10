@@ -51,10 +51,6 @@ class Content extends React.Component {
     if (!expanded) return false
     return (
       <div className='card-content'>
-        {/*<div className={'card-row'}>
-          <span className='keyword'>Keyword: {domain.keyword}</span>
-        </div>*/}
-       
         <div className={'card-details'}>
           <TrendChart
             {...this.props}

@@ -1,27 +1,18 @@
 import React from 'react'
-
+import Radio from 'antd/lib/radio'
 export default class SelectTld extends React.Component {
+  onChange = evt => {
+    this.props.selectTld(evt.target.value)
+  }
+
   render () {
-    const { tld, selectTld } = this.props
+    const { tld } = this.props
     return (
-      <div className='flex-row tab'>
-        <div className='option-title'>tld</div>
-        <span
-          className={tld === 'com' ? 'selected' : ''}
-          onClick={evt => selectTld('com')}>
-          .com
-        </span>
-        <span
-          className={tld === 'io' ? 'selected' : ''}
-          onClick={evt => selectTld('io')}>
-          .io
-        </span>
-        <span
-          className={tld === 'co' ? 'selected' : ''}
-          onClick={evt => selectTld('co')}>
-            .co
-        </span>
-      </div>
+      <Radio.Group value={tld} onChange={this.onChange} className={'gutter'}>
+        <Radio.Button value="com">com</Radio.Button>
+        <Radio.Button value="io">io</Radio.Button>
+        <Radio.Button value="co">co</Radio.Button>
+      </Radio.Group>
     )
   }
 }

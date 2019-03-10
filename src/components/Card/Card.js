@@ -1,10 +1,10 @@
 import React from 'react'
 import CardContent from '../CardContent'
-import CardHeader from '../CardHeader'
-import { resolve } from 'path';
-import 'isomorphic-fetch';
+import 'isomorphic-fetch'
+import Collapse from 'antd/lib/collapse'
+import Skeleton from 'antd/lib/skeleton'
 
-const BASE_URI = 'https://1oqkke2wfd.execute-api.us-east-1.amazonaws.com/dev'
+const BASE_URI = 'https://8pykq5wu32.execute-api.us-east-1.amazonaws.com/dev'
 
 const _fetch = (id, { endpoint }) => {
   let url = `${BASE_URI}/${endpoint}/${id}`
@@ -72,27 +72,15 @@ class Card extends React.Component {
 
   render () {
     if (this.props.domain.placeholder) {
-      return <div className='card-wrapper placeholder' />
-    }
+      return (<Skeleton />)
+    }  
     return (
-      <div
-        className='card-wrapper'
-        onClick={this.handleClick}
-      >
-        <CardHeader
-          {...this.props}
-          available={true}
-          expanded={this.state.expanded}
-          loading={this.state.loading}
-        />
-        <CardContent
-          {...this.props}
-          expanded={this.state.expanded}
-          data={this.state.data}
-          loading={this.state.loading}
-          fetchChartData={this.fetchChartData}
-        />
-        </div>
+      <CardContent
+        {...this.props}
+        data={this.state.data}
+        loading={this.state.loading}
+        fetchChartData={this.fetchChartData}
+      />
     )
   }
 }

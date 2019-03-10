@@ -5,22 +5,11 @@ import { unstable_deferredUpdates as deferredUpdates } from 'react-dom'
 import debounce from 'lodash.debounce'
 
 class LazyLoad extends React.Component {
-  static propTypes = {
-    posts: PropTypes.object,
-    projects: PropTypes.object,
-    render: PropTypes.func
-  }
-
-  state = {
-    loading: false
-  }
-  _hasUnmounted = false
   componentDidMount () {
     window.addEventListener('scroll', this.onScroll)
   }
 
   componentWillUnmount () {
-    this._hasUnmounted = true
     window.removeEventListener('scroll', this.onScroll)
   }
 

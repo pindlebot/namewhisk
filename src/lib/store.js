@@ -1,4 +1,5 @@
 import * as redux from 'redux'
+import thunk from 'redux-thunk'
 
 const SET_SEED = 'SET_SEED'
 const SET_KEYWORDS = 'SET_KEYWORDS'
@@ -54,6 +55,19 @@ export const setSearchMode = payload => ({
   payload,
   type: SET_SEARCH_MODE
 })
+
+export const onSearch = (value, remote) => async (dispatch, getState) => {
+  dispatch(setLoading(true))
+  dispatch(setSeed(value))
+  const state = getState()
+  await remote.publish({
+    name: state.seed,
+    tld: state.tld,
+    offset: state.offset,
+    limit: 10,
+    mode: state.mode
+  })
+}
 
 export const initialState = {
   seed: '',
@@ -139,4 +153,4 @@ export const reducer = (state, action) => {
   }
 }
 
-export const store = redux.createStore(reducer, initialState)
+export const store = redux.createStore(reducer, initialState, redux.applyMiddleware(thunk))

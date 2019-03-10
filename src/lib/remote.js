@@ -106,6 +106,7 @@ export default () => {
   }
 
   const end = () => {
+    if (!channel) return
     return new Promise((resolve, reject) =>
       channel.publish(topics.END, JSON.stringify({}), { qos: 0 }, async () => {
         await unsubscribe()
