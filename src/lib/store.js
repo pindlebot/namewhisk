@@ -1,7 +1,8 @@
-import * as redux from 'redux'
+import { applyMiddleware, createStore, compose } from 'redux'
 import thunk from 'redux-thunk'
+import { composeWithDevTools } from 'redux-devtools-extension'
 
-const SET_SEED = 'SET_SEED'
+const SET_NAME = 'SET_NAME'
 const SET_KEYWORDS = 'SET_KEYWORDS'
 const SET_TLD = 'SET_TLD'
 const SET_DOMAINS = 'SET_DOMAINS'
@@ -16,9 +17,14 @@ export const setOffset = offset => ({
   type: SET_OFFSET
 })
 
-export const setSeed = (seed) => ({
-  payload: seed,
-  type: SET_SEED
+export const fetchMore = (remote) => async (dispatch, getState) => {
+  dispatch(setOffset(getState().offset + 10))
+  await remote.publish(getState())
+}
+
+export const setName = (payload) => ({
+  payload: payload,
+  type: SET_NAME
 })
 
 export const setKeywords = (keywords) => ({
@@ -58,19 +64,12 @@ export const setSearchMode = payload => ({
 
 export const onSearch = (value, remote) => async (dispatch, getState) => {
   dispatch(setLoading(true))
-  dispatch(setSeed(value))
-  const state = getState()
-  await remote.publish({
-    name: state.seed,
-    tld: state.tld,
-    offset: state.offset,
-    limit: 10,
-    mode: state.mode
-  })
+  dispatch(setName(value))
+  await remote.publish(getState())
 }
 
 export const initialState = {
-  seed: '',
+  name: '',
   tld: 'com',
   domains: [],
   synonyms: [],
@@ -78,17 +77,18 @@ export const initialState = {
   mode: 'whimsical',
   offset: 0,
   loading: false,
-  action: ''
+  action: '',
+  limit: 10
 }
 
 export const reducer = (state, action) => {
   switch (action.type) {
-    case SET_SEED:
+    case SET_NAME:
       return {
         ...state,
         offset: 0,
         domains: [],
-        seed: action.payload,
+        name: action.payload,
         action: action.type
       }
     case SET_KEYWORDS:
@@ -147,10 +147,16 @@ export const reducer = (state, action) => {
         loading: false,
         offset: action.payload,
         action: action.type
-      }
+      }      
     default:
       return state
   }
 }
 
-export const store = redux.createStore(reducer, initialState, redux.applyMiddleware(thunk))
+export const store = createStore(
+  reducer,
+  initialState,
+  composeWithDevTools(
+    applyMiddleware(thunk)
+  )
+)

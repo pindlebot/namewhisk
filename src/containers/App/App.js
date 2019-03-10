@@ -1,18 +1,19 @@
 import React from 'react'
-import SearchInput from '../../components/SearchInput'
+import { connect } from 'react-redux'
+
 import Spinner from '../../components/Spinner'
 import SelectSearchType from '../../components/SelectSearchType'
-import { connect } from 'react-redux'
 import '../../css/main.scss'
 import {
-  setSeed,
+  setName,
   setTld,
   setSearchMode,
   setSynonyms,
   setLoading,
   setDomains,
   setOffset,
-  onSearch
+  onSearch,
+  fetchMore
 } from '../../lib/store'
 import SelectTld from '../../components/SelectTld'
 import SelectSynonym from '../../components/SelectSynonym'
@@ -45,12 +46,16 @@ class App extends React.Component {
     if (domains.length) {
       this.props.setDomains(domains)
     } else {
-      this.props.setOffset(this.props.offset + 10)
+      this.fetchMore()
     }
   }
 
   async componentWillUnmount () {
     await this.remote.end()
+  }
+
+  fetchMore = () => {
+    this.props.fetchMore(this.remote)
   }
 
   render () {
@@ -63,6 +68,7 @@ class App extends React.Component {
           <Hero  {...this.props} onSearch={this.onSearch} />
           <Results
             {...this.props}
+            fetchMore={this.fetchMore}
           />
         </Layout.Content>
       </Layout>
@@ -72,12 +78,13 @@ class App extends React.Component {
 
 export default connect(
   state => state, {
-    setSeed,
+    setName,
     onSearch,
     selectTld: setTld,
     setSearchMode,
     setLoading,
     setDomains,
-    setOffset
+    setOffset,
+    fetchMore
   }
 )(App)

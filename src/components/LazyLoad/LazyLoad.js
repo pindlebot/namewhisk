@@ -16,7 +16,8 @@ class LazyLoad extends React.Component {
   onScroll = debounce(evt => {
     let bottom = window.scrollY + window.innerHeight >= document.body.clientHeight
     if (bottom && !this.props.loading) {
-      this.props.setOffset(this.props.offset + 10)
+      this.props.fetchMore()
+      // this.props.setOffset(this.props.offset + 10)
     }
   }, 100)
 

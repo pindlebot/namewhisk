@@ -2,13 +2,13 @@ import React from 'react'
 
 class SelectSynonym extends React.Component {
   render () {
-    let { synonyms, seed, selectSeed } = this.props
+    let { synonyms, name, selectSeed } = this.props
     return (
       <div>
         {synonyms.map(synonym => (
           <div className='flex-row tab'>
             <span
-              className={seed === synonym ? 'selected' : ''}
+              className={name === synonym ? 'selected' : ''}
               onClick={evt => selectSeed(synonym)}
             >
               {synonym}
