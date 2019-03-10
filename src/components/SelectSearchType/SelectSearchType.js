@@ -1,5 +1,5 @@
 import React from 'react'
-import Radio from 'antd/lib/Radio'
+import Radio from 'antd/lib/radio'
 
 class SelectSearchType extends React.Component {
   handleChange = (evt) => {
