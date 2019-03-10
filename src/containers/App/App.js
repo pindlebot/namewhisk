@@ -23,6 +23,8 @@ import Hero from '../../components/Hero'
 import remote from '../../lib/remote'
 import Layout from 'antd/lib/layout'
 import 'antd/dist/antd.css'
+import { CSSTransition } from 'react-transition-group'
+import Spin from 'antd/lib/spin'
 
 const ENDPOINT_URL = 'https://pr4yxzklrj.execute-api.us-east-1.amazonaws.com/dev/'
 
@@ -71,6 +73,17 @@ class App extends React.Component {
             fetchMore={this.fetchMore}
           />
         </Layout.Content>
+        <CSSTransition
+            in={this.props.loading}
+            timeout={2000}
+            unmountOnExit
+            classNames={'spin'}
+          >
+            {state => (
+                <div className={'mask'}><Spin size={'large'} /></div>
+              )
+            }
+        </CSSTransition>
       </Layout>
     )
   }

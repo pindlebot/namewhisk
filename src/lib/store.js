@@ -18,6 +18,7 @@ export const setOffset = offset => ({
 })
 
 export const fetchMore = (remote) => async (dispatch, getState) => {
+  dispatch(setLoading(true))
   dispatch(setOffset(getState().offset + 10))
   await remote.publish(getState())
 }
