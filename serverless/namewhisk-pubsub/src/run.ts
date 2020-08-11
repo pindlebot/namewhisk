@@ -1,14 +1,14 @@
-const mqtt = require('mqtt')
-const {
+import mqtt from 'mqtt'
+import {
   createPresignedURL,
   getNames,
   connect,
   subscribe
-} = require('./utils')
-const domainAvailability = require('./domain-availability')
+} from './utils'
+import domainAvailability from './domain-availability'
 
-const topics = {}
-let channel
+const topics : any = {}
+let channel : mqtt.Client
 
 const handleMessage = async ({ topic, buffer }) => {
   const message = buffer.toString()
@@ -57,7 +57,7 @@ const handleMessage = async ({ topic, buffer }) => {
   }
 }
 
-module.exports.handler = async (
+export const handler = async (
   { channelId, options },
   context,
   callback

@@ -1,9 +1,9 @@
-const AWS = require('aws-sdk')
-const { debug } = require('./utils')
+import AWS from 'aws-sdk'
+import { debug } from './utils'
 
 const iotData = new AWS.IotData({ endpoint: process.env.AWS_IOT_HOST })
 
-module.exports.handler = async ({ channelId }, context, callback) => {
+export const handler = async ({ channelId }, context, callback) => {
   debug('Disconnect on', channelId)
 
   let params = {

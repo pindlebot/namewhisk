@@ -3,7 +3,7 @@ import mqtt from 'mqtt'
 import 'isomorphic-fetch'
 import cuid from 'cuid'
 
-const ENDPOINT_URL = 'https://pr4yxzklrj.execute-api.us-east-1.amazonaws.com/dev/'
+const ENDPOINT_URL = process.env.ENDPOINT
 
 const TOPIC_SESSION = 'namewhisk/new-session'
 

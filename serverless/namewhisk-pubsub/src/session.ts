@@ -1,7 +1,7 @@
-const cuid = require('cuid')
-const { createPresignedURL } = require('./utils')
+import cuid from 'cuid'
+import { createPresignedURL } from './utils'
 
-module.exports.handler = async (event, context, callback) => {
+export const handler = async (event, context, callback) => {
   const url = createPresignedURL()
   const channelId = cuid()
 

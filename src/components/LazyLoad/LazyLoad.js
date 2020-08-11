@@ -5,6 +5,7 @@ import { unstable_deferredUpdates as deferredUpdates } from 'react-dom'
 import debounce from 'lodash.debounce'
 import { CSSTransition } from 'react-transition-group'
 import Spin from 'antd/lib/spin'
+
 class LazyLoad extends React.Component {
   componentDidMount () {
     window.addEventListener('scroll', this.onScroll)

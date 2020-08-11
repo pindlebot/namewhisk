@@ -1,6 +1,6 @@
-const aws4 = require('aws4')
+import aws4 from 'aws4'
 
-function createPresignedURL (
+export function createPresignedURL (
   {
     host = process.env.AWS_IOT_HOST,
     path = '/mqtt',
@@ -34,7 +34,7 @@ function createPresignedURL (
   )}`
 }
 
-function debug (...log) {
+export function debug (...log) {
   console.log(
     ...log.map(
       argument =>
@@ -45,23 +45,25 @@ function debug (...log) {
   )
 }
 
-function getNames ({ limit, offset, name }) {
+export function getNames ({ limit, offset, name }) {
   const namist = require('namist')
   const options = { limit, offset }
   if (offset > namist.HEADS.length) {
     const dataset = require('prefix-suffix')
-    options.heads = dataset.suffixes.map(v => v[0])
-    options.modifiers = dataset.prefixes.map(v => v[0])
+    // @ts-ignore
+    (options as any).heads = dataset.suffixes.map(v => v[0])
+    // @ts-ignore
+    (options as any).modifiers = dataset.prefixes.map(v => v[0])
   }
   const data = namist(name, options)
     .map(name => name.toLowerCase())
   return data
 }
 
-const connect = ({ channel }) =>
+export const connect = ({ channel }) =>
   new Promise((resolve, reject) => channel.on('connect', resolve))
 
-const subscribe = ({ channel, topic }) =>
+export const subscribe = ({ channel, topic }) =>
   new Promise((resolve, reject) => channel.subscribe(topic,
     () => {
       console.log(`subscribed to topic "${topic}"`)
@@ -69,8 +71,3 @@ const subscribe = ({ channel, topic }) =>
     })
   )
 
-module.exports.createPresignedURL = createPresignedURL
-module.exports.debug = debug
-module.exports.getNames = getNames
-module.exports.connect = connect
-module.exports.subscribe = subscribe
