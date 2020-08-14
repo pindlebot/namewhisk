@@ -1,45 +1,28 @@
 {
-  "name": "namewhisk",
-  "version": "0.0.1",
+  "name": "front-end",
+  "version": "1.0.0",
   "main": "index.js",
+  "license": "MIT",
   "scripts": {
-    "dev": "parcel src/index.html",
-    "clean": "rimraf dist && rimraf .cache",
-    "build": "parcel build src/index.html --public-url /"
+    "dev": "parcel src/index.html"
   },
   "dependencies": {
-    "antd": "^4.4.2",
-    "chart.js": "^2.7.3",
-    "cuid": "^2.1.4",
-    "got": "^11.5.1",
-    "isomorphic-fetch": "^2.2.1",
-    "lodash.assign": "^4.2.0",
-    "lodash.debounce": "^4.0.8",
-    "mqtt": "^4.1.0",
-    "react": "16.13.1",
-    "react-chartjs-2": "^2.7.4",
-    "react-dom": "^16.6.0",
-    "react-redux": "^7.2.0",
-    "react-router-dom": "^5.2.0",
-    "react-select": "^3.1.0",
-    "react-transition-group": "^4.4.1",
-    "redux": "^4.0.1",
-    "redux-devtools-extension": "^2.13.8",
-    "redux-thunk": "^2.3.0"
+    "@apollo/client": "^3.1.3",
+    "@babel/runtime": "^7.11.2",
+    "@material-ui/core": "^4.9.10",
+    "@material-ui/icons": "^4.9.1",
+    "@material-ui/lab": "^4.0.0-alpha.56",
+    "@types/react": "^16.8.6",
+    "graphql": "^15.3.0",
+    "graphql-tag": "^2.11.0",
+    "parcel-bundler": "^1.12.4",
+    "react": "^16.8.0",
+    "react-dom": "^16.8.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.1.2",
-    "@babel/plugin-proposal-class-properties": "^7.1.0",
-    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
-    "@babel/plugin-proposal-optional-chaining": "^7.0.0",
-    "@babel/plugin-transform-flow-strip-types": "^7.0.0",
-    "@babel/plugin-transform-runtime": "^7.1.0",
-    "@babel/preset-env": "^7.1.0",
-    "@babel/preset-flow": "^7.0.0",
-    "@babel/preset-react": "^7.0.0",
-    "node-sass": "^4.9.4",
-    "parcel-bundler": "^1.10.3",
-    "rimraf": "^3.0.2",
-    "sass": "^1.26.10"
+    "@babel/core": "^7.11.1",
+    "@babel/preset-env": "^7.11.0",
+    "@babel/preset-react": "^7.10.4",
+    "typescript": "^3.9.7"
   }
 }

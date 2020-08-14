@@ -1,0 +1,22 @@
+{
+  "name": "namewhisk-graphql-api",
+  "version": "1.0.0",
+  "main": "src",
+  "license": "MIT",
+  "dependencies": {
+    "apollo-server": "^2.14.3",
+    "apollo-server-lambda": "~2.14.4",
+    "graphql": "~15.1.0",
+    "graphql-type-json": "^0.3.2",
+    "namist": "^0.0.8",
+    "prefix-suffix": "^0.0.1",
+    "whois-2": "^0.0.8"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.56",
+    "@types/graphql-type-json": "^0.3.2",
+    "@types/node": "^14.0.13",
+    "serverless-plugin-typescript": "^1.1.9",
+    "typescript": "^3.9.5"
+  }
+}

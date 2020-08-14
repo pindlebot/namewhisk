@@ -9,8 +9,10 @@ install:
 script: 
   - yarn add travis-up
 before_deploy:
+  - sudo apt-get install jq
   - ./bin/up version
   - NODE_ENV=production yarn build
+  - sh bin/vault.sh
 deploy:
   provider: script
   script: ./bin/up deploy production
