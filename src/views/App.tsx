@@ -8,6 +8,7 @@ import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab'
 import Layout from '../components/Layout'
 import ResultsList from '../components/ResultsList'
 import { DOMAINS_QUERY } from '../graphql/queries'
+import { useDebounce } from 'react-use'
 
 const useAppStyles = makeStyles(theme => ({
   root: {
@@ -96,6 +97,7 @@ const TLDS = [
 function App () {
   const client = useApolloClient()
   const classes = useAppStyles()
+  const [favorites, setFavorites] = React.useState(new Set())
   const [state, dispatch] = React.useReducer(reducer, {
     query: '',
     tld: 'io',
@@ -151,12 +153,34 @@ function App () {
     onSearch()
   }, [state.tld])
 
+  const onFavorite = id => {
+    const copy = new Set(favorites)
+    if (copy.has(id)) {
+      copy.delete(id)
+    } else {
+      copy.add(id)
+    }
+
+    setFavorites(copy)
+  }
+
+  useDebounce(() => {
+    if (favorites.size) {
+      window.localStorage.setItem('favorites', JSON.stringify(Array.from(favorites)))
+    }
+  }, 3000, [favorites])
+
+  React.useEffect(() => {
+    const favorites = JSON.parse(window.localStorage.getItem('favorites') || '[]')
+    setFavorites(new Set(favorites))
+  }, [])
+
   return (
     <Layout>
         <div className={classes.hero}>
           <Container maxWidth='sm' className={classes.root}>
-            <Typography align='center' gutterBottom>
-              Let's Name Your Silly Startup
+            <Typography align='center' gutterBottom variant='h3'>
+              Name Your Startup
             </Typography>
             <Toolbar className={classes.toolbar}>
               <TextField
@@ -201,10 +225,18 @@ function App () {
             <Paper className={classes.paper}>
               <Grid container>
                 <Grid item xs={6}>
-                  <ResultsList results={state.results.slice(0, 5)} />
+                  <ResultsList
+                    results={state.results.slice(0, 5)}
+                    favorites={favorites}
+                    onFavorite={onFavorite}
+                  />
                 </Grid>
                 <Grid item xs={6}>
-                  <ResultsList results={state.results.slice(5, 10)} />
+                  <ResultsList
+                    results={state.results.slice(5, 10)}
+                    favorites={favorites}
+                    onFavorite={onFavorite}
+                  />
                 </Grid>
               </Grid>
               <Pagination count={10} page={state.page} onChange={onPageChange} />
