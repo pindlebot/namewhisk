@@ -8,6 +8,15 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
     // @ts-ignore
     marginBottom: theme.spacing(2)
+  },
+  available: {
+    color: '#48BB78'
+  },
+  unavailable: {
+    color: '#ff4f56'
+  },
+  favorite: {
+    color: '#3d556b'
   }
 }))
 
@@ -26,11 +35,11 @@ function ResultsList (props) {
           return (
             <ListItem key={result.id} button>
               <ListItemIcon>
-                {result.available ? <CheckCircle /> : <Clear />}
+                {result.available ? <CheckCircle className={classes.available} /> : <Clear className={classes.unavailable} />}
               </ListItemIcon>
               <ListItemText primary={result.domain} />
               <ListItemSecondaryAction>
-                <IconButton onClick={onClick(result.id)}>
+                <IconButton onClick={onClick(result.id)} className={classes.favorite}>
                   {favorites.has(result.id) ? <Favorite /> : <FavoriteBorder />}
                 </IconButton>
               </ListItemSecondaryAction>

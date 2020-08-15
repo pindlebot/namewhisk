@@ -3,6 +3,7 @@ import dataset from 'prefix-suffix'
 import whois from 'whois-2'
 import crypto from 'crypto'
 import GraphQLJSON from 'graphql-type-json'
+import { request, gql } from 'graphql-request'
 
 export function getNames ({ limit, offset, name }) {
   const options = { limit, offset }
@@ -17,7 +18,7 @@ export function getNames ({ limit, offset, name }) {
   return data
 }
 
-async function checkAvailability ({ name, tld }) {
+async function checkDomainAvailability ({ name, tld }) {
   const domain = `${name}.${tld}`
   const metadata = await whois(domain, { format: 'json' })
   const available = !Object.keys(metadata).length
@@ -35,13 +36,32 @@ async function checkAvailability ({ name, tld }) {
   }
 }
 
+async function checkUsernameAvailability ({ name }) {
+  // query {
+  //   user(login:"fsdfsdfs") {
+  //     id
+  //   }
+  //   rateLimit {
+  //     nodeCount
+  //   }
+  // }
+}
+
 export default {
   Query: {
     domains: async (parent, variables, context) => {
       const { name, limit = 10, offset = 0, tld = 'io' } = variables
       const variations = await getNames({ limit, offset, name })
       const results = await Promise.all(
-        variations.map(variation => checkAvailability({ name: variation, tld }))
+        variations.map(variation => checkDomainAvailability({ name: variation, tld }))
+      )
+      return { results }
+    },
+    usernames: async (parent, variables, context) => {
+      const { name, limit = 10, offset = 0 } = variables
+      const variations = await getNames({ limit, offset, name })
+      const results = await Promise.all(
+        variations.map(variation => checkUsernameAvailability({ name: variation, tld }))
       )
       return { results }
     }

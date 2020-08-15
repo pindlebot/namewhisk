@@ -7,7 +7,7 @@ const useLayoutStyles = makeStyles(theme => ({
     flexGrow: 1
   },
   appBar: {
-    backgroundColor: '#001529'
+    backgroundColor: '#1a202c'
   }
 }))
 
